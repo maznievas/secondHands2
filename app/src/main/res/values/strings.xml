@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">SecondHands</string>
+    <string name="maps_key">AIzaSyAFkPnX7Q0ML9J576q6n9sknX_Sf6GFzlA</string>
+    <string name="select_city">Select city</string>
+    <string name="select_shop_s_name">Select shop\'s name</string>
+    <string name="select_update_day">Select update day</string>
     <string name="apply">Apply</string>
+    <string name="show_all_shops">Show all shops</string>
 </resources>

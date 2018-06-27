@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 
+
 android {
     compileSdkVersion 27
     defaultConfig {
@@ -19,6 +20,10 @@ android {
 }
 
 dependencies {
+    def roomVersion = "1.1.1"
+    def rxJavaVersion = "2.1.14"
+    def rxAndroidVersion = "2.0.2"
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "com.android.support:appcompat-v7:$rootProject.appCompatVersion"
     //ButterKnife
@@ -31,4 +36,23 @@ dependencies {
     implementation "com.google.android.gms:play-services-maps:$rootProject.googlePlayServicesMapsVersion"
     //multidex
    // implementation 'com.android.support:multidex:1.0.3'
+    //firebase
+    implementation 'com.google.firebase:firebase-core:16.0.1'
+    implementation 'com.google.firebase:firebase-database:16.0.1'
+    //dagger 2
+    implementation "com.google.dagger:dagger:$rootProject.daggerVersion"
+    annotationProcessor "com.google.dagger:dagger-compiler:$rootProject.daggerVersion"
+    //room
+    implementation "android.arch.persistence.room:runtime:$roomVersion"
+    annotationProcessor "android.arch.persistence.room:compiler:$roomVersion"
+    //rxJava2
+    implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
+    implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
+    implementation "android.arch.persistence.room:rxjava2:$roomVersion"
+    //RecyclerView
+    //RecyclerView
+    implementation "com.android.support:recyclerview-v7:$rootProject.appCompatVersion"
+    implementation "com.android.support:cardview-v7:$rootProject.appCompatVersion"
 }
+
+apply plugin: 'com.google.gms.google-services'
