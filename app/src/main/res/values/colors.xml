@@ -6,5 +6,6 @@
     <color name="lightestYellow">#FFF8E1</color>
     <color name="lightYellow">#ffecb3</color>
     <color name="controlsYellow">#FFD54F</color>
+    <color name="recytclerViewItemColor">#FFE082</color>
     <color name="black">#000000</color>
 </resources>

@@ -17,12 +17,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
     def roomVersion = "1.1.1"
     def rxJavaVersion = "2.1.14"
     def rxAndroidVersion = "2.0.2"
+    def constraintLayoutVersion = '1.1.2'
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "com.android.support:appcompat-v7:$rootProject.appCompatVersion"
@@ -35,10 +40,11 @@ dependencies {
     //Google play services
     implementation "com.google.android.gms:play-services-maps:$rootProject.googlePlayServicesMapsVersion"
     //multidex
-   // implementation 'com.android.support:multidex:1.0.3'
+    // implementation 'com.android.support:multidex:1.0.3'
     //firebase
     implementation 'com.google.firebase:firebase-core:16.0.1'
     implementation 'com.google.firebase:firebase-database:16.0.1'
+    implementation 'com.google.firebase:firebase-firestore:17.0.2'
     //dagger 2
     implementation "com.google.dagger:dagger:$rootProject.daggerVersion"
     annotationProcessor "com.google.dagger:dagger-compiler:$rootProject.daggerVersion"
@@ -50,9 +56,12 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
     implementation "android.arch.persistence.room:rxjava2:$roomVersion"
     //RecyclerView
-    //RecyclerView
     implementation "com.android.support:recyclerview-v7:$rootProject.appCompatVersion"
     implementation "com.android.support:cardview-v7:$rootProject.appCompatVersion"
+    //ConstraintLAyout
+    implementation "com.android.support.constraint:constraint-layout:$constraintLayoutVersion"
+    //Material Design spinner
+    implementation 'com.weiwangcn.betterspinner:library-material:1.1.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/allShopsLayout"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/button_height"
+    android:layout_below="@+id/searchContainerLayout"
+    android:background="@color/controlsYellow"
+    android:text="@string/show_all_shops">
+
+    <TextView
+        android:id="@+id/titleTextView"
+        style="@style/TextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@+id/arrowDownImage"
+        android:paddingStart="@dimen/normal_padding"
+        android:text="@string/show_all_shops"
+        android:textSize="@dimen/button_text_size"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/arrowDownImage"
+        android:layout_width="@dimen/button_height"
+        android:layout_height="@dimen/button_height"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="@dimen/normal_padding"
+        android:src="@drawable/ic_keyboard_arrow_down_black_24dp" />
+</RelativeLayout>

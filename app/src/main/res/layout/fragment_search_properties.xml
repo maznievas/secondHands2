@@ -1,114 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="@dimen/normal_padding"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/lightYellow">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/container_shadow"
-        android:padding="@dimen/small_padding"
-        android:id="@+id/searchContainerLayout"
-        >
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-           style="@style/TextView"
-            android:text="@string/select_city"/>
-
-        <Spinner
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/citySpinner"
-            android:layout_marginTop="@dimen/small_padding"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/TextView"
-            android:layout_marginTop="@dimen/small_padding"
-            android:text="@string/select_shop_s_name"/>
-
-        <Spinner
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/shopSpinner"
-            android:layout_marginTop="@dimen/small_padding"/>
-
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/TextView"
-            android:layout_marginTop="@dimen/small_padding"
-            android:text="@string/select_update_day"/>
-
-        <Spinner
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/updateDaySpinner"
-            android:layout_marginTop="@dimen/small_padding"/>
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:text="@string/apply"
-            style="@style/Button"
-            android:textAllCaps="false"
-            android:layout_marginTop="@dimen/small_padding"/>
-    </LinearLayout>
+    android:layout_height="match_parent">
 
     <RelativeLayout
-        android:id="@+id/allShopsLayout"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/button_height"
-        android:layout_below="@+id/searchContainerLayout"
-        android:layout_marginTop="@dimen/medium_padding"
-        android:background="@color/controlsYellow"
-        android:text="@string/show_all_shops"
-        >
+        android:layout_height="match_parent"
+        android:background="@color/lightYellow"
+        android:padding="@dimen/normal_padding">
 
-        <TextView
+        <LinearLayout
+            android:id="@+id/searchContainerLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/show_all_shops"
-            android:layout_centerVertical="true"
-            style="@style/TextView"
-            android:textStyle="bold"
-            android:textSize="@dimen/button_text_size"
-            android:paddingStart="@dimen/normal_padding"
-            android:layout_toStartOf="@+id/arrowDownImage"
-           />
+            android:background="@drawable/container_shadow"
+            android:orientation="vertical"
+            android:padding="@dimen/small_padding">
 
-        <ImageView
-            android:id="@+id/arrowDownImage"
-            android:layout_width="@dimen/button_height"
+            <TextView
+                style="@style/TextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/select_city" />
+
+            <Spinner
+                android:id="@+id/citySpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/small_padding"
+                android:background="@drawable/yellow_border"/>
+
+            <TextView
+                style="@style/TextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/small_padding"
+                android:text="@string/select_shop_s_name" />
+
+            <Spinner
+                android:id="@+id/shopNameSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/small_padding"
+                android:background="@drawable/yellow_border"/>
+
+
+            <TextView
+                style="@style/TextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/small_padding"
+                android:text="@string/select_update_day" />
+
+            <Spinner
+                android:id="@+id/updateDaySpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/small_padding"
+                android:background="@drawable/yellow_border"/>
+
+            <Button
+                style="@style/Button"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/small_padding"
+                android:text="@string/show_on_map"
+                android:textAllCaps="false" />
+        </LinearLayout>
+
+        <apobooking.apobooking.com.secondhands.ui.ShowSelectedShopsButton
+            android:id="@+id/allShopsLayout"
+            android:layout_width="match_parent"
             android:layout_height="@dimen/button_height"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/normal_padding"
-            android:src="@drawable/ic_keyboard_arrow_down_black_24dp"/>
+            android:layout_below="@+id/searchContainerLayout"
+            android:layout_marginTop="@dimen/medium_padding" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/alShopsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/allShopsLayout"
+            android:layout_marginTop="@dimen/normal_padding"
+            android:visibility="gone"
+            tools:listitem="@layout/shop_item"
+/>
+
+        <Button
+            android:id="@+id/applyButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="@string/show_on_map"
+            android:visibility="gone"/>
+
     </RelativeLayout>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/alShopsRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/allShopsLayout"
-        android:visibility="invisible"
-        android:layout_marginTop="@dimen/normal_padding"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:text="@string/apply"
-        android:id="@+id/applyButton"
-       />
-
-</RelativeLayout>
+</ScrollView>

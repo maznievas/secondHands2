@@ -13,8 +13,10 @@ public class Shop {
     @PrimaryKey
     @NonNull
     String id;
-    String name;
+    String nameId;
     Integer updateDay;
+    String cityId;
+    String name;
 
     public String getAddress() {
         return address;
@@ -32,19 +34,35 @@ public class Shop {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public Integer getUpdateDay() {
         return updateDay;
     }
 
     public void setUpdateDay(Integer updateDay) {
         this.updateDay = updateDay;
+    }
+
+    public String getNameId() {
+        return nameId;
+    }
+
+    public void setNameId(String nameId) {
+        this.nameId = nameId;
+    }
+
+    public String getCityId() {
+        return cityId;
+    }
+
+    public void setCityId(String cityId) {
+        this.cityId = cityId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

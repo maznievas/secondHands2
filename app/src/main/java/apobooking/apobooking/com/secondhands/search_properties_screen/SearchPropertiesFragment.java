@@ -1,24 +1,30 @@
 package apobooking.apobooking.com.secondhands.search_properties_screen;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 import com.arellomobile.mvp.MvpAppCompatFragment;
 import com.arellomobile.mvp.presenter.InjectPresenter;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+
+import java.util.List;
+import java.util.Map;
 
 import apobooking.apobooking.com.secondhands.MainActivity;
 import apobooking.apobooking.com.secondhands.R;
 import apobooking.apobooking.com.secondhands.entity.Shop;
+import apobooking.apobooking.com.secondhands.ui.ShowSelectedShopsButton;
+import apobooking.apobooking.com.secondhands.util.ShopsAdapter;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
@@ -28,8 +34,25 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements Se
     @InjectPresenter
     SearchPropertiesPresenter searchPropertiesPresenter;
 
+    @BindView(R.id.alShopsRecyclerView)
+    RecyclerView selectedShopsRecyclerView;
 
+    @BindView(R.id.allShopsLayout)
+    ShowSelectedShopsButton showSelectedShopsButton;
+
+    @BindView(R.id.updateDaySpinner)
+    Spinner updateDaySpinner;
+
+    @BindView(R.id.citySpinner)
+    Spinner citySpinner;
+
+    @BindView(R.id.shopNameSpinner)
+    Spinner shopNameSpinner;
+
+    private ShopsAdapter shopsAdapter;
     private Unbinder unbinder;
+    private ProgressDialog progressDialog;
+    private ArrayAdapter<String> citiesAdapter, shopsNameAdapter, updateDayAdapter;
 
     public static SearchPropertiesFragment newInstance() {
         return new SearchPropertiesFragment();
@@ -49,29 +72,63 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements Se
         return view;
     }
 
-    public void init(){
+    public void init() {
+        selectedShopsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        shopsAdapter = new ShopsAdapter(getContext());
+        selectedShopsRecyclerView.setAdapter(shopsAdapter);
 
+        String[] updateDayList = getResources().getStringArray(R.array.days_of_week);
+        updateDayAdapter = new ArrayAdapter<String>(getContext(),
+                android.R.layout.simple_dropdown_item_1line, updateDayList);
+        updateDayAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+        updateDaySpinner.setAdapter(updateDayAdapter);
+        if (updateDayList.length > 0)
+            updateDaySpinner.setSelection(0);
 
-        //todo try with proper id
-   //    mFirebaseDatabase.push().getKey();
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage(getString(R.string.loading));
+        progressDialog.setCancelable(false);
 
-//        Shop shop = new Shop();
-//        shop.setId(0);
-//        shop.setName("Econom class");
-//        shop.setAddress("Test address");
-//        shop.setUpdateDay(1);
-//
-//        Shop shop1 = new Shop();
-//        shop1.setId(1);
-//        shop1.setName("Massa");
-//        shop1.setAddress("Test address 1");
-//        shop1.setUpdateDay(0);
-//
-//        mFirebaseDatabase.child(String.valueOf(shop.getId())).setValue(shop);
-//        mFirebaseDatabase.child(String.valueOf(shop1.getId())).setValue(shop1);
+        searchPropertiesPresenter.loadSpinnerData();
 
+        citySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                showSelectedShopsButton.setInactive();
+                selectedShopsRecyclerView.setVisibility(View.GONE);
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
 
+            }
+        });
+
+        shopNameSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                showSelectedShopsButton.setInactive();
+                selectedShopsRecyclerView.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        updateDaySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                showSelectedShopsButton.setInactive();
+                selectedShopsRecyclerView.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     @Override
@@ -82,8 +139,76 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements Se
     }
 
     @OnClick(R.id.applyButton)
-    public void onApplyClicked()
-    {
-        ((MainActivity)getActivity()).openMap();
+    public void onApplyClicked() {
+        ((MainActivity) getActivity()).openMap();
+    }
+
+    @Override
+    public void setSelectedShops(List<Shop> shopList) {
+        shopsAdapter.setShopList(shopList);
+    }
+
+    @Override
+    public void setCitiesList(List<String> citiesList) {
+        citiesList.add(0, getContext().getString(R.string.all_cities));
+        citiesAdapter = new ArrayAdapter<String>(getContext(),
+                android.R.layout.simple_dropdown_item_1line, citiesList);
+        citiesAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+        citySpinner.setAdapter(citiesAdapter);
+        if (citiesList.size() > 0)
+            citySpinner.setSelection(0);
+    }
+
+    @Override
+    public void setShopsNAmeLIst(List<String> shopsNameList) {
+        shopsNameList.add(0, getContext().getString(R.string.all_shops));
+        shopsNameAdapter = new ArrayAdapter<String>(getContext(),
+                android.R.layout.simple_dropdown_item_1line, shopsNameList);
+        shopsNameAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+        shopNameSpinner.setAdapter(shopsNameAdapter);
+        if (shopsNameList.size() > 0)
+            shopNameSpinner.setSelection(0);
+    }
+
+    //@Override
+    public void setSpinnerData(List<String> citiesList, List<String> shopsNameList) {
+
+
+    }
+
+    @Override
+    public void showLoadingState() {
+        progressDialog.show();
+    }
+
+    @Override
+    public void hideLoadingstate() {
+        progressDialog.dismiss();
+    }
+
+    @OnClick(R.id.allShopsLayout)
+    public void ShowSelectedShopsButton() {
+        showSelectedShopsButton.changeState();
+        if (selectedShopsRecyclerView.getVisibility() == View.VISIBLE)
+            selectedShopsRecyclerView.setVisibility(View.GONE);
+        else
+            selectedShopsRecyclerView.setVisibility(View.VISIBLE);
+        if(showSelectedShopsButton.getArrowDown()) {
+            shopsAdapter.clear();
+            String city, shopName, updateDay;
+            if (citySpinner.getSelectedItemPosition() != 0)
+                city = citiesAdapter.getItem(citySpinner.getSelectedItemPosition());
+            else
+                city = "";
+            if (shopNameSpinner.getSelectedItemPosition() != 0)
+                shopName = shopsNameAdapter.getItem(shopNameSpinner.getSelectedItemPosition());
+            else
+                shopName = "";
+            if (updateDaySpinner.getSelectedItemPosition() != 0)
+                updateDay = updateDayAdapter.getItem(updateDaySpinner.getSelectedItemPosition());
+            else
+                updateDay = "";
+            searchPropertiesPresenter.selectShops(city, shopName, updateDay);
+        }
     }
 }

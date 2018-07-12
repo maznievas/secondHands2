@@ -1,9 +1,32 @@
 <resources>
     <string name="app_name">SecondHands</string>
     <string name="maps_key">AIzaSyAFkPnX7Q0ML9J576q6n9sknX_Sf6GFzlA</string>
-    <string name="select_city">Select city</string>
+    <string name="select_city">Select name</string>
     <string name="select_shop_s_name">Select shop\'s name</string>
     <string name="select_update_day">Select update day</string>
     <string name="apply">Apply</string>
-    <string name="show_all_shops">Show all shops</string>
+    <string name="show_all_shops">Show selected shops</string>
+    <string name="hide_selected_shops">Hide selected shops</string>
+    <string name="show_on_map">Show on map</string>
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
+    <string name="sunday">Sunday</string>
+    <string name="loading">Loading…</string>
+    <string name="all_days">All days</string>
+    <string name="all_shops">All shops</string>
+    <string name="all_cities">All cities</string>
+    <string-array name="days_of_week">
+        <item>@string/all_days</item>
+        <item>@string/monday</item>
+        <item>@string/tuesday</item>
+        <item>@string/wednesday</item>
+        <item>@string/thursday</item>
+        <item>@string/friday</item>
+        <item>@string/saturday</item>
+        <item>@string/sunday</item>
+    </string-array>
 </resources>
