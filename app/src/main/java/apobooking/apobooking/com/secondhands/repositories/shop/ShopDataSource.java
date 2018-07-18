@@ -20,7 +20,7 @@ public interface ShopDataSource {
 
     Completable saveShops(List<Shop> shopList);
     Maybe<List<Map<String, Object>>> getAllShops();
-    Maybe<List<Map<String,Object>>> getSelectedShops(String city, String shopsName, String updateDay);
+    Maybe<List<Map<String,Object>>> getSelectedShops(String city, String shopsName, String updateDay, boolean needToresetLastResult);
     Maybe<List<Map<String,Object>>> getAllCities();
     Maybe<List<Map<String,Object>>> getAllShopsNAme();
     Maybe<List<City>> getAllCitiesEntity();

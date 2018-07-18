@@ -43,7 +43,8 @@ public class ShopLocalDataSource implements ShopDataSource {
     }
 
     @Override
-    public Maybe<List<Map<String, Object>>> getSelectedShops(String city, String shopsName, String updateDay) {
+    public Maybe<List<Map<String, Object>>> getSelectedShops(String city, String shopsName, String updateDay,
+                                                             boolean needToResetLastResult) {
         return null;
     }
 

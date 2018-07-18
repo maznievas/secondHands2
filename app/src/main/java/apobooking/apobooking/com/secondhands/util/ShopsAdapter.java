@@ -3,6 +3,7 @@ package apobooking.apobooking.com.secondhands.util;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import java.util.List;
 
 import apobooking.apobooking.com.secondhands.R;
 import apobooking.apobooking.com.secondhands.entity.Shop;
+import apobooking.apobooking.com.secondhands.search_properties_screen.SearchPropertiesFragment;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -45,6 +47,10 @@ public class ShopsAdapter extends RecyclerView.Adapter<ShopsAdapter.ViewHolder> 
         holder.shopNameTextView.setText(shop.getName());
         holder.shopAdressTextView.setText(shop.getAddress());
         holder.updateDayTextView.setText(context.getString(DayDetectHelper.detectDay(shop.getUpdateDay())));
+
+        if(position == shopList.size() - 1)
+     //       bottomListener.bottomReached();
+            SearchPropertiesFragment.allowToSearch = true;
     }
 
     @Override
@@ -62,6 +68,12 @@ public class ShopsAdapter extends RecyclerView.Adapter<ShopsAdapter.ViewHolder> 
 
     public void clear() {
         shopList.clear();
+        notifyDataSetChanged();
+    }
+
+    public void addSelectedShops(List<Shop> shopList) {
+        Log.d("mLog", "ShopListSize: " + shopList.size());
+        this.shopList.addAll(shopList);
         notifyDataSetChanged();
     }
 

@@ -1,17 +1,23 @@
 package apobooking.apobooking.com.secondhands.search_properties_screen;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -41,39 +47,39 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
 
     CompositeDisposable compositeDisposable;
 
-    ValueEventListener postListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-            List<Shop> shopList = new ArrayList();
-            List<String> citiesList = new ArrayList();
-            List<String> shopsNameList = new ArrayList<>();
-
-            for (DataSnapshot data : dataSnapshot.child("shops").getChildren()) {
-                Shop shop = data.getValue(Shop.class);
-                shopList.add(shop);
-                //  Log.d("mLog", shop.getName());
-            }
-            updateShopList(shopList);
-
-            for (DataSnapshot data : dataSnapshot.child("cities").getChildren()) {
-                String city = data.getValue().toString();
-                citiesList.add(city);
-            }
-            for (DataSnapshot data : dataSnapshot.child("shopsName").getChildren()) {
-                String shopNmae = data.getValue().toString();
-                shopsNameList.add(shopNmae);
-            }
-            citiesList.add(0, Const.Firebase.ALL_CITIES);
-            shopsNameList.add(0, Const.Firebase.ALL_SHOPS);
-            // getViewState().setSpinnerData(citiesList, shopsNameList);
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-            // Getting Post failed, log a message
-            Log.w("mLog", "loadPost:onCancelled" + databaseError.toException());
-        }
-    };
+//    ValueEventListener postListener = new ValueEventListener() {
+//        @Override
+//        public void onDataChange(DataSnapshot dataSnapshot) {
+//            List<Shop> shopList = new ArrayList();
+//            List<String> citiesList = new ArrayList();
+//            List<String> shopsNameList = new ArrayList<>();
+//
+//            for (DataSnapshot data : dataSnapshot.child("shops").getChildren()) {
+//                Shop shop = data.getValue(Shop.class);
+//                shopList.add(shop);
+//                //  Log.d("mLog", shop.getName());
+//            }
+//            updateShopList(shopList);
+//
+//            for (DataSnapshot data : dataSnapshot.child("cities").getChildren()) {
+//                String city = data.getValue().toString();
+//                citiesList.add(city);
+//            }
+//            for (DataSnapshot data : dataSnapshot.child("shopsName").getChildren()) {
+//                String shopNmae = data.getValue().toString();
+//                shopsNameList.add(shopNmae);
+//            }
+//            citiesList.add(0, Const.Firebase.ALL_CITIES);
+//            shopsNameList.add(0, Const.Firebase.ALL_SHOPS);
+//            // getViewState().setSpinnerData(citiesList, shopsNameList);
+//        }
+//
+//        @Override
+//        public void onCancelled(DatabaseError databaseError) {
+//            // Getting Post failed, log a message
+//            Log.w("mLog", "loadPost:onCancelled" + databaseError.toException());
+//        }
+//    };
 
     public SearchPropertiesPresenter() {
         SecondHandApplication.getAppComponent().inject(this);
@@ -103,6 +109,30 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
 
         //    databaseReference.addListenerForSingleValueEvent(postListener);
 
+        //todo:uncomment for adding data to firestore
+//        Map<String, Object> data = new HashMap<>();
+//        data.put("nameId", "7GYe0P6TrjKD6FYUHB6m");
+//        data.put("address", "");
+//        data.put("cityId", "qcFHZtVdGmmDGKpTGAbC");
+//        data.put("updateDay", 0);
+//
+//        for (int i = 0; i < 19; i++)
+//            firebaseFirestore.collection("shops")
+//                    .add(data)
+//                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//                        @Override
+//                        public void onSuccess(DocumentReference documentReference) {
+//                            Log.d("mLog", "DocumentSnapshot written with ID: " + documentReference.getId());
+//                        }
+//                    })
+//                    .addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            Log.w("mLog", "Error adding document", e);
+//                        }
+//                    });
+
+
         //todo: uncomment for adding  shops' name items to firebase
 //        for(int i = 0; i < 1; i++) {
 //            String id = databaseReference.push().getKey();
@@ -129,14 +159,14 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
 //        }
     }
 
-    public void selectShops(String city, String shopsName, String updateDay) {
+    public void selectShops(String city, String shopsName, String updateDay, boolean needToResetLastResult) {
         final String[] cityIdFinal = new String[1];
         final String[] shopsNameIdFinal = new String[1];
         compositeDisposable.add(shopRepository.getAllCitiesEntity()
                 .toFlowable()
-              //  .flatMapIterable(cityList -> cityList)
+                //  .flatMapIterable(cityList -> cityList)
                 .map(allCitiesList -> {
-                    for(City cityMap : allCitiesList) {
+                    for (City cityMap : allCitiesList) {
                         if (cityMap.getName().equals(city))
                             cityIdFinal[0] = cityMap.getId();
                     }
@@ -147,16 +177,15 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                             .toFlowable();
                 })
                 .map(allShopsNameList -> {
-                    for(ShopName shopNameFirebase : allShopsNameList)
-                    {
-                        if(shopNameFirebase.getName().equals(shopsName))
+                    for (ShopName shopNameFirebase : allShopsNameList) {
+                        if (shopNameFirebase.getName().equals(shopsName))
                             shopsNameIdFinal[0] = shopNameFirebase.getId();
                     }
                     return 1;
                 })
                 .flatMap(ignored -> {
-                    return shopRepository.getSelectedShops(cityIdFinal[0],  shopsNameIdFinal[0],
-                            String.valueOf(DayDetectHelper.detectDay(updateDay)))
+                    return shopRepository.getSelectedShops(cityIdFinal[0], shopsNameIdFinal[0],
+                            String.valueOf(DayDetectHelper.detectDay(updateDay)), needToResetLastResult)
                             .toFlowable();
                 })
                 .flatMapIterable(shopMapList -> shopMapList)
@@ -183,7 +212,7 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                 .doOnSubscribe(v -> getViewState().showLoadingState())
                 .doOnTerminate(() -> getViewState().hideLoadingstate())
                 .subscribe(shopList -> {
-                    getViewState().setSelectedShops(shopList);
+                    getViewState().addSelectedShops(shopList);
                 }, throwable -> {
                     Log.e("mLog", "Update shops");
                     throwable.printStackTrace();
@@ -191,7 +220,63 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
         );
     }
 
+ //   public Flowable<List<Shop>> selectShopsFlowable(String city, String shopsName, String updateDay)
+  //  {
+//        final String[] cityIdFinal = new String[1];
+//        final String[] shopsNameIdFinal = new String[1];
+//        return shopRepository.getAllCitiesEntity()
+//                .toFlowable()
+//                //  .flatMapIterable(cityList -> cityList)
+//                .map(allCitiesList -> {
+//                    for (City cityMap : allCitiesList) {
+//                        if (cityMap.getName().equals(city))
+//                            cityIdFinal[0] = cityMap.getId();
+//                    }
+//                    return 1;
+//                })
+//                .flatMap(ignored -> {
+//                    return shopRepository.getAllShopNameEntity()
+//                            .toFlowable();
+//                })
+//                .map(allShopsNameList -> {
+//                    for (ShopName shopNameFirebase : allShopsNameList) {
+//                        if (shopNameFirebase.getName().equals(shopsName))
+//                            shopsNameIdFinal[0] = shopNameFirebase.getId();
+//                    }
+//                    return 1;
+//                })
+//                .flatMap(ignored -> {
+//                    return shopRepository.getSelectedShops(cityIdFinal[0], shopsNameIdFinal[0],
+//                            String.valueOf(DayDetectHelper.detectDay(updateDay)))
+//                            .toFlowable();
+//                })
+//                .flatMapIterable(shopMapList -> shopMapList)
+//                .flatMap(shopMap -> {
+//                    return Flowable.just(new Shop())
+//                            .map(shop -> {
+//                                shop.setNameId(shopMap.get(Const.Firebase.NAME_ID).toString());
+//                                shop.setAddress(shopMap.get(Const.Firebase.ADDRESS).toString());
+//                                shop.setUpdateDay(Integer.parseInt(shopMap.get(Const.Firebase.UPDATE_DAY).toString()));
+//                                return shop;
+//                            })
+//                            .flatMap(shop -> {
+//                                return shopRepository.getShopNameById(shop.getNameId())
+//                                        .map(shopName -> {
+//                                            shop.setName(shopName);
+//                                            return shop;
+//                                        });
+//                            });
+//                })
+//                .toList()
+//                .toFlowable()
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread());
+////                .doOnSubscribe(v -> getViewState().showLoadingState())
+////                .doOnTerminate(() -> getViewState().hideLoadingstate());
+   // }
+
     public void loadSpinnerData() {
+        getViewState().showLoadingState();
         compositeDisposable.add(
                 shopRepository.getAllCities()
                         .subscribeOn(Schedulers.io())
@@ -219,13 +304,15 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                         .toList()
                         .toFlowable()
                         .observeOn(AndroidSchedulers.mainThread())
-                        .doOnSubscribe(c -> getViewState().showLoadingState())
-                        .doOnTerminate(() -> getViewState().hideLoadingstate())
+                        //.doOnSubscribe(c -> getViewState().showLoadingState())
+                        //.doOnTerminate(() -> getViewState().hideLoadingstate())
                         .subscribe(shopsNameList -> {
                             getViewState().setShopsNAmeLIst(shopsNameList);
+                            getViewState().hideLoadingstate();
                         }, throwable -> {
                             Log.e("mLog", "Setting spinner data");
                             throwable.printStackTrace();
+                            getViewState().hideLoadingstate();
                         })
         );
     }

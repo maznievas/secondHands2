@@ -19,4 +19,8 @@ public abstract class Const {
             public static final String SHOPS_NAME = "shopsName";
         }
     }
+
+    public class RecyclerView{
+        public static final int TOTAL_ITEM_EACH_LOAD = 3;
+    }
 }

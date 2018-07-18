@@ -8,12 +8,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -45,12 +45,15 @@ public class ShopRemoteDataSource implements ShopDataSource {
 
     DatabaseReference databaseReference;
     FirebaseFirestore firebaseFirestore;
+    private DocumentSnapshot lastResult;
+    //private int currentPage = 0;
 
     @Inject
     public ShopRemoteDataSource(DatabaseReference databaseReference,
                                 FirebaseFirestore firebaseFirestore) {
         this.databaseReference = databaseReference;
         this.firebaseFirestore = firebaseFirestore;
+        this.firebaseFirestore.setLoggingEnabled(true);
     }
 
     @Override
@@ -87,76 +90,85 @@ public class ShopRemoteDataSource implements ShopDataSource {
     }
 
     @Override
-    public Maybe<List<Map<String, Object>>> getSelectedShops(String city, String shopsName, String updateDay) {
-        CollectionReference collection = firebaseFirestore.collection(Const.Firebase.Tables.SHOPS);
-        Task taskCity = null;
-        Task taskUpdateDay = null;
-        Task taskName = null;
+    public Maybe<List<Map<String, Object>>> getSelectedShops(String city, String shopsName, String updateDay,
+                                                             boolean needToResetLastResult) {
+        Query collection = firebaseFirestore.collection(Const.Firebase.Tables.SHOPS)
+               // .orderBy(Const.Firebase.UPDATE_DAY)
+                .limit(Const.RecyclerView.TOTAL_ITEM_EACH_LOAD);
+                //.startAt(currentPage * Const.RecyclerView.TOTAL_ITEM_EACH_LOAD);
+               // .endAt(currentPage * TOTAL_ITEM_EACH_LOAD + TOTAL_ITEM_EACH_LOAD);
+      //  Log.d("mLog", "current page: " + currentPage);
+      //  currentPage++;
+//        Task taskCity = null;
+//        Task taskUpdateDay = null;
+//        Task taskName = null;
+//        Query query = null;
 
         if (!updateDay.equals("7"))
-            taskUpdateDay = collection.whereEqualTo(Const.Firebase.UPDATE_DAY,
-                    Integer.parseInt(updateDay)).get();
-        if (!TextUtils.isEmpty(city))
-            taskCity = collection.whereEqualTo(Const.Firebase.CITY_ID, city).get();
-        if (!TextUtils.isEmpty(shopsName))
-            taskName = collection.whereEqualTo(Const.Firebase.NAME_ID, shopsName).get();
+           collection = collection.whereEqualTo(Const.Firebase.UPDATE_DAY,
+                    Integer.parseInt(updateDay));
+        if (!TextUtils.isEmpty(city)) {
+            collection = collection.whereEqualTo(Const.Firebase.CITY_ID, city);
+        }
+        if (!TextUtils.isEmpty(shopsName)) {
+            collection = collection.whereEqualTo(Const.Firebase.NAME_ID, shopsName);
+        }
 
         Log.d("mLog", "Detected city: " + city);
         Log.d("mLog", "Detected name: " + shopsName);
+//
+//        Task finalTaskCity = taskCity;
+//        Task finalTaskUpdateDay = taskUpdateDay;
+//        Task finalTaskName = taskName;
+//
+//        int taskSize = 0;
+//        if (finalTaskCity != null)
+//            taskSize++;
+//        if (finalTaskName != null)
+//            taskSize++;
+//        if (finalTaskUpdateDay != null)
+//            taskSize++;
+//
+//        int iterator = -1;
+//        Task[] tasksArray = new Task[taskSize];
+//        if (finalTaskCity != null)
+//            tasksArray[++iterator] = finalTaskCity;
+//        if (finalTaskName != null)
+//            tasksArray[++iterator] = finalTaskName;
+//        if (finalTaskUpdateDay != null)
+//            tasksArray[++iterator] = finalTaskUpdateDay;
 
-        Task finalTaskCity = taskCity;
-        Task finalTaskUpdateDay = taskUpdateDay;
-        Task finalTaskName = taskName;
+       //     Query finalQuery = query;
+        if(needToResetLastResult)
+            lastResult = null;
 
-        int taskSize = 0;
-        if (finalTaskCity != null)
-            taskSize++;
-        if (finalTaskName != null)
-            taskSize++;
-        if (finalTaskUpdateDay != null)
-            taskSize++;
+        if(lastResult != null)
+            collection = collection.startAfter(lastResult);
+        Query finalCollection = collection;
 
-        int iterator = -1;
-        Task[] tasksArray = new Task[taskSize];
-        if (finalTaskCity != null)
-            tasksArray[++iterator] = finalTaskCity;
-        if (finalTaskName != null)
-            tasksArray[++iterator] = finalTaskName;
-        if (finalTaskUpdateDay != null)
-            tasksArray[++iterator] = finalTaskUpdateDay;
-
-        if (taskSize == 0)
-            return getAllShops();
-        else
-            return Maybe.create(new MaybeOnSubscribe<List<Map<String, Object>>>() {
+        return Maybe.create(new MaybeOnSubscribe<List<Map<String, Object>>>() {
                 @Override
-                public void subscribe(MaybeEmitter<List<Map<String, Object>>> e) throws Exception {
-
-                    Tasks.whenAllSuccess(tasksArray)
-                            .addOnSuccessListener(new OnSuccessListener<List<Object>>() {
+                public void subscribe(MaybeEmitter<List<Map<String, Object>>> emitter) throws Exception {
+                    finalCollection
+//                            .whereEqualTo(Const.Firebase.UPDATE_DAY,
+//                                    Integer.parseInt(updateDay))
+//                            .whereEqualTo(Const.Firebase.CITY_ID, city)
+//                            .whereEqualTo(Const.Firebase.NAME_ID, shopsName)
+                            .get()
+                            .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                 @Override
-                                public void onSuccess(List<Object> objects) {
-                                    Log.d("mLog", "Success");
-                                    List<Map<String, Object>> generalList = new ArrayList<>();
-                                    boolean firstTime = true;
-                                    for (Object object : objects) {
-                                        Log.d("mLog", "Object size: " + objects.size());
-                                        List<Map<String, Object>> tempList = new ArrayList<>();
-                                        for (DocumentSnapshot document : ((QuerySnapshot) object).getDocuments()) {
-                                            tempList.add(document.getData());
-                                            Log.d("mLog", "DATA from firestore: " + document.getId() + " => " + document.getData());
-                                        }
-                                        if (firstTime && tempList.size() > 0) {
-                                            generalList.addAll(tempList);
-                                            firstTime = false;
-                                        }
-                                        if (tempList.size() > 0) {
-                                            generalList.retainAll(tempList);
-                                        }
-                                        Log.d("mLog", "New Document snapshot");
+                                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                    List<Map<String, Object>> list = new ArrayList<>();
+                                    for (QueryDocumentSnapshot querySnapshot : queryDocumentSnapshots) {
+                                        list.add(querySnapshot.getData());
+                                        // Log.d();
                                     }
-                                    e.onSuccess(generalList);
-                                    e.onComplete();
+                                    if(queryDocumentSnapshots.size() > 0)
+                                        lastResult = queryDocumentSnapshots.getDocuments()
+                                            .get(queryDocumentSnapshots.size() - 1);
+
+                                    emitter.onSuccess(list);
+                                    emitter.onComplete();
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {
@@ -167,6 +179,7 @@ public class ShopRemoteDataSource implements ShopDataSource {
                             });
                 }
             });
+       // }
     }
 
 
@@ -265,6 +278,7 @@ public class ShopRemoteDataSource implements ShopDataSource {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if (task.isSuccessful()) {
+                                    Log.d("mLog", "Check time");
                                     List<ShopName> list = new ArrayList<>();
                                     for (QueryDocumentSnapshot document : task.getResult()) {
                                         ShopName shopName = new ShopName();

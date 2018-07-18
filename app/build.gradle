@@ -62,6 +62,8 @@ dependencies {
     implementation "com.android.support.constraint:constraint-layout:$constraintLayoutVersion"
     //Material Design spinner
     implementation 'com.weiwangcn.betterspinner:library-material:1.1.0'
+    //Pull load view
+    implementation 'com.github.tosslife:pullloadview:1.1.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
