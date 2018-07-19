@@ -159,7 +159,8 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
 //        }
     }
 
-    public void selectShops(String city, String shopsName, String updateDay, boolean needToResetLastResult) {
+    public void selectShops(String city, String shopsName, String updateDay, boolean needToResetLastResult,
+             boolean needLimit) {
         final String[] cityIdFinal = new String[1];
         final String[] shopsNameIdFinal = new String[1];
         compositeDisposable.add(shopRepository.getAllCitiesEntity()
@@ -185,7 +186,8 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                 })
                 .flatMap(ignored -> {
                     return shopRepository.getSelectedShops(cityIdFinal[0], shopsNameIdFinal[0],
-                            String.valueOf(DayDetectHelper.detectDay(updateDay)), needToResetLastResult)
+                            String.valueOf(DayDetectHelper.detectDay(updateDay)), needToResetLastResult,
+                            needLimit)
                             .toFlowable();
                 })
                 .flatMapIterable(shopMapList -> shopMapList)

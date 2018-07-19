@@ -3,6 +3,7 @@ package apobooking.apobooking.com.secondhands.di;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
 
 import javax.inject.Singleton;
 
@@ -27,5 +28,12 @@ public class FirebaseModule {
     FirebaseFirestore provideFirebaseFirestoreReference()
     {
         return FirebaseFirestore.getInstance();
+    }
+
+    @Provides
+    @Singleton
+    FirebaseStorage provideFirebaseStorage()
+    {
+        return FirebaseStorage.getInstance();
     }
 }

@@ -71,6 +71,7 @@
 
                 <Button
                     style="@style/Button"
+                    android:id="@+id/showOnMapButton"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/button_height"
                     android:layout_marginTop="@dimen/normal_padding"
@@ -106,8 +107,6 @@
                 android:visibility="gone"
                 android:layout_below="@+id/alShopsRecyclerView"
               />
-
-
 
             <Button
                 android:id="@+id/applyButton"

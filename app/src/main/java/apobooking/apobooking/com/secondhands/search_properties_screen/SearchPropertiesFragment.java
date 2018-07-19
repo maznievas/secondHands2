@@ -187,7 +187,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
 
     @OnClick(R.id.applyButton)
     public void onApplyClicked() {
-        ((MainActivity) getActivity()).openMap();
+     //   ((MainActivity) getActivity()).openMap();
     }
 
     @Override
@@ -298,11 +298,27 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
                 updateDay = updateDayAdapter.getItem(updateDaySpinner.getSelectedItemPosition());
             else
                 updateDay = "";
-            searchPropertiesPresenter.selectShops(city, shopName, updateDay, needToResetLastResult);
+            searchPropertiesPresenter.selectShops(city, shopName, updateDay, needToResetLastResult, true);
             //allowToSearch = true;
         }
     }
 
-
-
+    @OnClick(R.id.showOnMapButton)
+    public void onShowOnMapButtonClicked()
+    {
+        String city, shopName, updateDay;
+        if (citySpinner.getSelectedItemPosition() != 0)
+            city = citiesAdapter.getItem(citySpinner.getSelectedItemPosition());
+        else
+            city = "";
+        if (shopNameSpinner.getSelectedItemPosition() != 0)
+            shopName = shopsNameAdapter.getItem(shopNameSpinner.getSelectedItemPosition());
+        else
+            shopName = "";
+        if (updateDaySpinner.getSelectedItemPosition() != 0)
+            updateDay = updateDayAdapter.getItem(updateDaySpinner.getSelectedItemPosition());
+        else
+            updateDay = "";
+        ((MainActivity) getActivity()).openMap(city, shopName, updateDay);
+    }
 }

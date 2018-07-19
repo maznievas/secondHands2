@@ -61,8 +61,8 @@ public class ShopRepository implements ShopDataSource {
 
     @Override
     public Maybe<List<Map<String, Object>>> getSelectedShops(String city, String shopsName, String updateDay,
-                                                             boolean needToResetLastResult) {
-        return shopRemoteDataSource.getSelectedShops(city, shopsName, updateDay, needToResetLastResult);
+                                                             boolean needToResetLastResult, boolean needLimit) {
+        return shopRemoteDataSource.getSelectedShops(city, shopsName, updateDay, needToResetLastResult, needLimit);
     }
 
 

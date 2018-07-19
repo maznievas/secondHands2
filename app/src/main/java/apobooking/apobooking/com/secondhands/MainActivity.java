@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import apobooking.apobooking.com.secondhands.map_screen.MapFragment;
 import apobooking.apobooking.com.secondhands.search_properties_screen.SearchPropertiesFragment;
+import apobooking.apobooking.com.secondhands.util.Const;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,10 +31,17 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    public void openMap() {
+    public void openMap(String city, String shopName, String updateDay) {
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         Fragment mapFragment = MapFragment.newInstance();
+
+        Bundle bundle = new Bundle();
+        bundle.putString(Const.Bundle.SHOP_CITY, city);
+        bundle.putString(Const.Bundle.SHOP_NAME, shopName);
+        bundle.putString(Const.Bundle.SHOP_UPDATE_DAY, updateDay);
+
+        mapFragment.setArguments(bundle);
 
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction

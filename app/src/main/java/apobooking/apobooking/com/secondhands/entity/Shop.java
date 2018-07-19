@@ -1,8 +1,11 @@
 package apobooking.apobooking.com.secondhands.entity;
 
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
+
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 @IgnoreExtraProperties
@@ -17,6 +20,8 @@ public class Shop {
     Integer updateDay;
     String cityId;
     String name;
+    @Ignore
+    LatLng ll;
 
     public String getAddress() {
         return address;
@@ -64,5 +69,13 @@ public class Shop {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public LatLng getLl() {
+        return ll;
+    }
+
+    public void setLl(LatLng ll) {
+        this.ll = ll;
     }
 }

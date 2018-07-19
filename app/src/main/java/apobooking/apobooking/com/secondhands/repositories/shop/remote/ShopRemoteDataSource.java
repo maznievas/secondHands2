@@ -53,7 +53,7 @@ public class ShopRemoteDataSource implements ShopDataSource {
                                 FirebaseFirestore firebaseFirestore) {
         this.databaseReference = databaseReference;
         this.firebaseFirestore = firebaseFirestore;
-        this.firebaseFirestore.setLoggingEnabled(true);
+       // this.firebaseFirestore.setLoggingEnabled(true);
     }
 
     @Override
@@ -91,21 +91,17 @@ public class ShopRemoteDataSource implements ShopDataSource {
 
     @Override
     public Maybe<List<Map<String, Object>>> getSelectedShops(String city, String shopsName, String updateDay,
-                                                             boolean needToResetLastResult) {
-        Query collection = firebaseFirestore.collection(Const.Firebase.Tables.SHOPS)
-               // .orderBy(Const.Firebase.UPDATE_DAY)
-                .limit(Const.RecyclerView.TOTAL_ITEM_EACH_LOAD);
-                //.startAt(currentPage * Const.RecyclerView.TOTAL_ITEM_EACH_LOAD);
-               // .endAt(currentPage * TOTAL_ITEM_EACH_LOAD + TOTAL_ITEM_EACH_LOAD);
-      //  Log.d("mLog", "current page: " + currentPage);
-      //  currentPage++;
-//        Task taskCity = null;
-//        Task taskUpdateDay = null;
-//        Task taskName = null;
-//        Query query = null;
+                                                             boolean needToResetLastResult, boolean needLimit) {
+        Query collection;
+        if (needLimit)
+            collection = firebaseFirestore.collection(Const.Firebase.Tables.SHOPS)
+                    // .orderBy(Const.Firebase.UPDATE_DAY)
+                    .limit(Const.RecyclerView.TOTAL_ITEM_EACH_LOAD);
+        else
+            collection = firebaseFirestore.collection(Const.Firebase.Tables.SHOPS);
 
         if (!updateDay.equals("7"))
-           collection = collection.whereEqualTo(Const.Firebase.UPDATE_DAY,
+            collection = collection.whereEqualTo(Const.Firebase.UPDATE_DAY,
                     Integer.parseInt(updateDay));
         if (!TextUtils.isEmpty(city)) {
             collection = collection.whereEqualTo(Const.Firebase.CITY_ID, city);
@@ -138,48 +134,48 @@ public class ShopRemoteDataSource implements ShopDataSource {
 //        if (finalTaskUpdateDay != null)
 //            tasksArray[++iterator] = finalTaskUpdateDay;
 
-       //     Query finalQuery = query;
-        if(needToResetLastResult)
+        //     Query finalQuery = query;
+        if (needToResetLastResult)
             lastResult = null;
 
-        if(lastResult != null)
+        if (lastResult != null)
             collection = collection.startAfter(lastResult);
         Query finalCollection = collection;
 
         return Maybe.create(new MaybeOnSubscribe<List<Map<String, Object>>>() {
-                @Override
-                public void subscribe(MaybeEmitter<List<Map<String, Object>>> emitter) throws Exception {
-                    finalCollection
+            @Override
+            public void subscribe(MaybeEmitter<List<Map<String, Object>>> emitter) throws Exception {
+                finalCollection
 //                            .whereEqualTo(Const.Firebase.UPDATE_DAY,
 //                                    Integer.parseInt(updateDay))
 //                            .whereEqualTo(Const.Firebase.CITY_ID, city)
 //                            .whereEqualTo(Const.Firebase.NAME_ID, shopsName)
-                            .get()
-                            .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                @Override
-                                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                    List<Map<String, Object>> list = new ArrayList<>();
-                                    for (QueryDocumentSnapshot querySnapshot : queryDocumentSnapshots) {
-                                        list.add(querySnapshot.getData());
-                                        // Log.d();
-                                    }
-                                    if(queryDocumentSnapshots.size() > 0)
-                                        lastResult = queryDocumentSnapshots.getDocuments()
+                        .get()
+                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                            @Override
+                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                List<Map<String, Object>> list = new ArrayList<>();
+                                for (QueryDocumentSnapshot querySnapshot : queryDocumentSnapshots) {
+                                    list.add(querySnapshot.getData());
+                                    // Log.d();
+                                }
+                                if (queryDocumentSnapshots.size() > 0)
+                                    lastResult = queryDocumentSnapshots.getDocuments()
                                             .get(queryDocumentSnapshots.size() - 1);
 
-                                    emitter.onSuccess(list);
-                                    emitter.onComplete();
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
+                                emitter.onSuccess(list);
+                                emitter.onComplete();
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
 
-                                }
-                            });
-                }
-            });
-       // }
+                            }
+                        });
+            }
+        });
+        // }
     }
 
 

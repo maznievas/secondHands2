@@ -9,7 +9,7 @@ import android.arch.persistence.room.RoomDatabase;
 
 import apobooking.apobooking.com.secondhands.entity.Shop;
 
-@Database(entities = {Shop.class}, version = 4)
+@Database(entities = {Shop.class}, version = 5)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract ShopDao shopDao();
 }
