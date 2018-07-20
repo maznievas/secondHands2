@@ -49,4 +49,22 @@ public class MainActivity extends AppCompatActivity {
                 .addToBackStack("Map")
                 .commit();
     }
+
+    public void openMapSelectedShop(String shopId) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+        Fragment mapFragment = MapFragment.newInstance();
+
+        Bundle bundle = new Bundle();
+        bundle.putString(Const.Bundle.SHOP_ID, shopId);
+        bundle.putBoolean(Const.Bundle.LOAD_ONE_SHOP, true);
+
+        mapFragment.setArguments(bundle);
+
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction
+                .replace(R.id.fragmentHolderLayout, mapFragment)
+                .addToBackStack("Map")
+                .commit();
+    }
 }

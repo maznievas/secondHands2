@@ -1,10 +1,10 @@
 package apobooking.apobooking.com.secondhands.map_screen;
 
+import android.app.ProgressDialog;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +39,7 @@ public class MapFragment extends MvpAppCompatFragment implements MapView {
     private SupportMapFragment mapFragment;
     private GoogleMap googleMapGlobal;
     private Geocoder geocoder;
+    private ProgressDialog progressDialog;
 
     public static MapFragment newInstance() {
         return new MapFragment();
@@ -58,22 +59,27 @@ public class MapFragment extends MvpAppCompatFragment implements MapView {
         return view;
     }
 
-    public void init(){
+    public void init() {
+
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage(getString(R.string.loading));
+        progressDialog.setCancelable(false);
+
         geocoder = new Geocoder(getContext());
         mapFragment = SupportMapFragment.newInstance();
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
-
                 googleMapGlobal = googleMap;
-//                mapPresenter.selectShops(getArguments().getString(Const.Bundle.SHOP_CITY),
-//                        getArguments().getString(Const.Bundle.SHOP_NAME),
-//                        getArguments().getString(Const.Bundle.SHOP_UPDATE_DAY),
-//                        geocoder, false);
-                mapPresenter.selectShops(getArguments().getString(Const.Bundle.SHOP_CITY),
-                        getArguments().getString(Const.Bundle.SHOP_NAME),
-                        getArguments().getString(Const.Bundle.SHOP_UPDATE_DAY),
-                        geocoder, false);
+
+                if (getArguments().getBoolean(Const.Bundle.LOAD_ONE_SHOP, false)) {
+                    mapPresenter.displaySelectedShop(getArguments().getString(Const.Bundle.SHOP_ID),
+                            geocoder);
+                } else
+                    mapPresenter.selectShops(getArguments().getString(Const.Bundle.SHOP_CITY),
+                            getArguments().getString(Const.Bundle.SHOP_NAME),
+                            getArguments().getString(Const.Bundle.SHOP_UPDATE_DAY),
+                            geocoder, false);
             }
         });
         getChildFragmentManager().beginTransaction().replace(R.id.map, mapFragment).commit();
@@ -87,13 +93,13 @@ public class MapFragment extends MvpAppCompatFragment implements MapView {
     }
 
     @Override
-    public void displayShop(Shop shop) {
-       // Log.d("mLog", "Shop mapped: " + shop.getAddress());
+    public void getSelectedShop(Shop shop) {
+        // Log.d("mLog", "Shop mapped: " + shop.getAddress());
         googleMapGlobal.addMarker(new MarkerOptions().position(shop.getLl())
-                        .title(shop.getName() + " (" + getString(DayDetectHelper.detectDay(shop.getUpdateDay()))
+                .title(shop.getName() + " (" + getString(DayDetectHelper.detectDay(shop.getUpdateDay()))
                         + ")")
-                        .snippet(shop.getUpdateDay() + " "
-                                + shop.getAddress())
+                .snippet(shop.getUpdateDay() + " "
+                        + shop.getAddress())
         );
     }
 
@@ -106,5 +112,13 @@ public class MapFragment extends MvpAppCompatFragment implements MapView {
         googleMapGlobal.moveCamera(update);
     }
 
+    @Override
+    public void showLoadingState() {
+        progressDialog.show();
+    }
 
+    @Override
+    public void hideLoadingstate() {
+        progressDialog.dismiss();
+    }
 }

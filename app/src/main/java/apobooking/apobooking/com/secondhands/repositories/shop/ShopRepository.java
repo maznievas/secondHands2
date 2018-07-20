@@ -90,4 +90,9 @@ public class ShopRepository implements ShopDataSource {
     public Flowable<String> getShopNameById(String id) {
         return shopRemoteDataSource.getShopNameById(id);
     }
+
+    @Override
+    public Flowable<Shop> getShopById(String shopId) {
+        return shopRemoteDataSource.getShopById(shopId);
+    }
 }

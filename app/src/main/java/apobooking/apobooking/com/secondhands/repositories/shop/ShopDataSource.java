@@ -27,4 +27,5 @@ public interface ShopDataSource {
     Maybe<List<City>> getAllCitiesEntity();
     Maybe<List<ShopName>> getAllShopNameEntity();
     Flowable<String> getShopNameById(String id);
+    Flowable<Shop> getShopById(String shopId);
 }

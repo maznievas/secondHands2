@@ -73,4 +73,9 @@ public class ShopLocalDataSource implements ShopDataSource {
     public Flowable<String> getShopNameById(String id) {
         return null;
     }
+
+    @Override
+    public Flowable<Shop> getShopById(String shopId) {
+        return null;
+    }
 }

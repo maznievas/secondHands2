@@ -53,7 +53,7 @@ public class ShopRemoteDataSource implements ShopDataSource {
                                 FirebaseFirestore firebaseFirestore) {
         this.databaseReference = databaseReference;
         this.firebaseFirestore = firebaseFirestore;
-       // this.firebaseFirestore.setLoggingEnabled(true);
+        // this.firebaseFirestore.setLoggingEnabled(true);
     }
 
     @Override
@@ -156,7 +156,9 @@ public class ShopRemoteDataSource implements ShopDataSource {
                             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                                 List<Map<String, Object>> list = new ArrayList<>();
                                 for (QueryDocumentSnapshot querySnapshot : queryDocumentSnapshots) {
-                                    list.add(querySnapshot.getData());
+                                    Map<String, Object> map = querySnapshot.getData();
+                                    map.put(Const.Firebase.SHOP_ID, querySnapshot.getId());
+                                    list.add(map);
                                     // Log.d();
                                 }
                                 if (queryDocumentSnapshots.size() > 0)
@@ -317,6 +319,41 @@ public class ShopRemoteDataSource implements ShopDataSource {
                                     e.onComplete();
                                 } else {
                                     Log.w("mLog", "Error getting shopNames", task.getException());
+                                }
+                            }
+                        });
+            }
+        }, BackpressureStrategy.BUFFER);
+    }
+
+    @Override
+    public Flowable<Shop> getShopById(String shopId) {
+        CollectionReference collection = firebaseFirestore.collection(Const.Firebase.Tables.SHOPS);
+        DocumentReference document = collection.document(shopId);
+
+        return Flowable.create(new FlowableOnSubscribe<Shop>() {
+            @Override
+            public void subscribe(FlowableEmitter<Shop> e) throws Exception {
+                document.get()
+                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    Shop shop = new Shop();
+                                    Map<String, Object> map = task.getResult().getData();
+                                    shop.setId(task.getResult().getId());
+                                    shop.setImageName(map.get(Const.Firebase.IMAGE_PATH).toString());
+                                    shop.setCityId(map.get(Const.Firebase.CITY_ID).toString());
+                                    shop.setNameId(map.get(Const.Firebase.NAME_ID).toString());
+                                    shop.setUpdateDay(Integer
+                                            .parseInt(map.get(Const.Firebase.UPDATE_DAY).toString()));
+                                    shop.setAddress(map.get(Const.Firebase.ADDRESS).toString());
+
+                                    e.onNext(shop);
+                                    e.onComplete();
+                                }
+                                else {
+                                    Log.w("mLog", "Error getting single shop", task.getException());
                                 }
                             }
                         });

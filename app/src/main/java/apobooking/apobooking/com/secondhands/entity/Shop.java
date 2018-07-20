@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.IgnoreExtraProperties;
+import com.google.firebase.storage.StorageReference;
 
 @IgnoreExtraProperties
 @Entity
@@ -22,6 +23,9 @@ public class Shop {
     String name;
     @Ignore
     LatLng ll;
+    @Ignore
+    StorageReference imageReference;
+    String imageName;
 
     public String getAddress() {
         return address;
@@ -77,5 +81,21 @@ public class Shop {
 
     public void setLl(LatLng ll) {
         this.ll = ll;
+    }
+
+    public StorageReference getImageReference() {
+        return imageReference;
+    }
+
+    public void setImageReference(StorageReference imageReference) {
+        this.imageReference = imageReference;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
     }
 }

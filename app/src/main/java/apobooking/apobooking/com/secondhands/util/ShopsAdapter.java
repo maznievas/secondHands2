@@ -10,6 +10,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,10 +26,14 @@ import butterknife.ButterKnife;
  * Created by procreationsmac on 03/07/2018.
  */
 
-public class ShopsAdapter extends RecyclerView.Adapter<ShopsAdapter.ViewHolder> {
+public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     List<Shop> shopList;
     Context context;
+    private static final int ITEM = 0;
+    private static final int LOADING = 1;
+    private boolean isLoadingAdded = false;
+    private ShopItemListener shopItemListener;
 
     public ShopsAdapter(Context context) {
         shopList = new ArrayList<>();
@@ -35,23 +42,97 @@ public class ShopsAdapter extends RecyclerView.Adapter<ShopsAdapter.ViewHolder> 
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.shop_item, parent, false);
-        return new ViewHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        RecyclerView.ViewHolder viewHolder = null;
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+
+        switch (viewType) {
+            case ITEM:
+                viewHolder = getViewHolder(parent, inflater);
+                break;
+            case LOADING:
+                View v2 = inflater.inflate(R.layout.item_progress, parent, false);
+                viewHolder = new LoadingVH(v2);
+                break;
+        }
+        return viewHolder;
+       // View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.shop_item, parent, false);
+       // return new ViewHolder(view);
+    }
+
+    @NonNull
+    private RecyclerView.ViewHolder getViewHolder(ViewGroup parent, LayoutInflater inflater) {
+        RecyclerView.ViewHolder viewHolder;
+        View v1 = inflater.inflate(R.layout.shop_item, parent, false);
+        viewHolder = new ViewHolder(v1);
+        return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Shop shop = shopList.get(position);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder1, int position) {
+        switch (getItemViewType(position)) {
+            case ITEM:
+                ViewHolder holder = (ViewHolder) holder1;
+                Shop shop = shopList.get(position);
 
-        holder.shopNameTextView.setText(shop.getName());
-        holder.shopAdressTextView.setText(shop.getAddress());
-        holder.updateDayTextView.setText(context.getString(DayDetectHelper.detectDay(shop.getUpdateDay())));
+                holder.shopNameTextView.setText(shop.getName());
+                holder.shopAdressTextView.setText(shop.getAddress());
+                holder.updateDayTextView.setText(context.getString(DayDetectHelper.detectDay(shop.getUpdateDay())));
 
-        if(position == shopList.size() - 1)
-     //       bottomListener.bottomReached();
-            SearchPropertiesFragment.allowToSearch = true;
+                holder.shopItemLayout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        shopItemListener.shopSelected(shop.getId());
+                    }
+                });
+
+                Glide.with(context)
+                        .using(new FirebaseImageLoader())
+                        .load(shop.getImageReference())
+                        .into(holder.shopImage);
+
+                if(position == shopList.size() - 1)
+                    //       bottomListener.bottomReached();
+                    SearchPropertiesFragment.allowToSearch = true;
+                break;
+            case LOADING:
+                break;
+        }
     }
+
+    @Override
+    public int getItemViewType(int position) {
+        return (position == shopList.size() - 1 && isLoadingAdded) ? LOADING : ITEM;
+    }
+
+    public void addLoadingFooter() {
+       // if(!isLoadingAdded) {
+            shopList.add(new Shop());
+            isLoadingAdded = true;
+            Log.d("mLog", "Added. Sise: " + shopList.size());
+            notifyDataSetChanged();
+        //}
+    }
+
+    public void removeLoadingFooter() {
+       // if(isLoadingAdded) {
+            isLoadingAdded = false;
+
+            int position = shopList.size() - 1;
+            Shop item = shopList.get(position);
+
+            if (item != null) {
+                shopList.remove(position);
+                Log.d("mLog", "Removed. Sise: " + shopList.size());
+                notifyItemRemoved(position);
+            }
+       // }
+    }
+
+//    @Override
+//    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+//
+//    }
 
     @Override
     public int getItemCount() {
@@ -67,6 +148,7 @@ public class ShopsAdapter extends RecyclerView.Adapter<ShopsAdapter.ViewHolder> 
     }
 
     public void clear() {
+        isLoadingAdded = false;
         shopList.clear();
         notifyDataSetChanged();
     }
@@ -75,6 +157,15 @@ public class ShopsAdapter extends RecyclerView.Adapter<ShopsAdapter.ViewHolder> 
         Log.d("mLog", "ShopListSize: " + shopList.size());
         this.shopList.addAll(shopList);
         notifyDataSetChanged();
+    }
+
+    public boolean getLoadingFooterState() {
+        return isLoadingAdded;
+    }
+
+    public void setShopItemListener(ShopItemListener shopItemListener)
+    {
+        this.shopItemListener = shopItemListener;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -91,10 +182,24 @@ public class ShopsAdapter extends RecyclerView.Adapter<ShopsAdapter.ViewHolder> 
         @BindView(R.id.updateDayTextView)
         TextView updateDayTextView;
 
+        @BindView(R.id.shopItemLayout)
+        ViewGroup shopItemLayout;
+
         public ViewHolder(View itemView) {
             super(itemView);
 
             ButterKnife.bind(this, itemView);
         }
+    }
+
+    protected class LoadingVH extends RecyclerView.ViewHolder {
+
+        public LoadingVH(View itemView) {
+            super(itemView);
+        }
+    }
+
+    public interface ShopItemListener{
+        void shopSelected(String shopId);
     }
 }

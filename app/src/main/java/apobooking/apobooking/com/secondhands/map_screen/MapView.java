@@ -13,6 +13,8 @@ import apobooking.apobooking.com.secondhands.entity.Shop;
 
 @StateStrategyType(SkipStrategy.class)
 public interface MapView extends MvpView {
-    void displayShop(Shop shop);
+    void getSelectedShop(Shop shop);
     void showLocation(LatLng ll);
+    void showLoadingState();
+    void hideLoadingstate();
 }

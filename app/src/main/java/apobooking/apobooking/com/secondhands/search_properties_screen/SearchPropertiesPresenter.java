@@ -13,6 +13,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +31,7 @@ import apobooking.apobooking.com.secondhands.repositories.shop.ShopRepository;
 import apobooking.apobooking.com.secondhands.util.Const;
 import apobooking.apobooking.com.secondhands.util.DayDetectHelper;
 import io.reactivex.Flowable;
+import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -45,8 +48,13 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
     @Inject
     ShopRepository shopRepository;
 
-    CompositeDisposable compositeDisposable;
+    @Inject
+    FirebaseStorage firebaseStorage;
 
+
+    private StorageReference gsReference;
+    CompositeDisposable compositeDisposable;
+    private StorageReference storageRef;
 //    ValueEventListener postListener = new ValueEventListener() {
 //        @Override
 //        public void onDataChange(DataSnapshot dataSnapshot) {
@@ -106,6 +114,8 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
     public void init() {
         compositeDisposable = new CompositeDisposable();
 
+        storageRef = firebaseStorage.getReference();
+        // Create a reference to a file from a Google Cloud Storage URI
 
         //    databaseReference.addListenerForSingleValueEvent(postListener);
 
@@ -194,9 +204,18 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                 .flatMap(shopMap -> {
                     return Flowable.just(new Shop())
                             .map(shop -> {
+                                shop.setId(shopMap.get(Const.Firebase.SHOP_ID).toString());
+                                shop.setImageName(shopMap.get(Const.Firebase.IMAGE_PATH).toString());
                                 shop.setNameId(shopMap.get(Const.Firebase.NAME_ID).toString());
                                 shop.setAddress(shopMap.get(Const.Firebase.ADDRESS).toString());
                                 shop.setUpdateDay(Integer.parseInt(shopMap.get(Const.Firebase.UPDATE_DAY).toString()));
+                                return shop;
+                            })
+                            .map(shop -> {
+                                Log.d("mLog", "REF: " + Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                                gsReference = firebaseStorage
+                                        .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                                shop.setImageReference(gsReference);
                                 return shop;
                             })
                             .flatMap(shop -> {
@@ -211,8 +230,8 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                 .toFlowable()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(v -> getViewState().showLoadingState())
-                .doOnTerminate(() -> getViewState().hideLoadingstate())
+                //.doOnSubscribe(v -> getViewState().showLoadingState())
+                //.doOnTerminate(() -> getViewState().hideLoadingstate())
                 .subscribe(shopList -> {
                     getViewState().addSelectedShops(shopList);
                 }, throwable -> {
