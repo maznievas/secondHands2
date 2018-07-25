@@ -208,6 +208,7 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                                 shop.setImageName(shopMap.get(Const.Firebase.IMAGE_PATH).toString());
                                 shop.setNameId(shopMap.get(Const.Firebase.NAME_ID).toString());
                                 shop.setAddress(shopMap.get(Const.Firebase.ADDRESS).toString());
+                                shop.setImages((ArrayList<String>)shopMap.get(Const.Firebase.IMAGES_ARRAY));
                                 shop.setUpdateDay(Integer.parseInt(shopMap.get(Const.Firebase.UPDATE_DAY).toString()));
                                 return shop;
                             })
@@ -216,6 +217,15 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                                 gsReference = firebaseStorage
                                         .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
                                 shop.setImageReference(gsReference);
+
+                                List<StorageReference> storageList = new ArrayList<>();
+                                for(String imagePath : shop.getImages())
+                                {
+                                    gsReference = firebaseStorage
+                                            .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + imagePath);
+                                    storageList.add(gsReference);
+                                }
+                                shop.setImagesReference(storageList);
                                 return shop;
                             })
                             .flatMap(shop -> {
@@ -230,8 +240,8 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                 .toFlowable()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                //.doOnSubscribe(v -> getViewState().showLoadingState())
-                //.doOnTerminate(() -> getViewState().hideLoadingstate())
+                .doOnSubscribe(v -> getViewState().lockUI())
+                .doOnTerminate(() -> getViewState().unlockUI())
                 .subscribe(shopList -> {
                     getViewState().addSelectedShops(shopList);
                 }, throwable -> {
@@ -297,22 +307,20 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
    // }
 
     public void loadSpinnerData() {
-        getViewState().showLoadingState();
+       // getViewState().showLoadingState();
         compositeDisposable.add(
                 shopRepository.getAllCities()
                         .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
                         .toFlowable()
                         .flatMapIterable(citiesList -> citiesList)
                         .map(mapList -> {
-                            return mapList.get("name").toString();
+                            return mapList.get(Const.Firebase.CITIES_NAME).toString();
                         })
                         .toList()
                         .map(citiesList -> {
                             getViewState().setCitiesList(citiesList);
                             return 1;
                         })
-                        .observeOn(Schedulers.io())
                         .toMaybe()
                         .flatMap(ignored -> {
                             return shopRepository.getAllShopsNAme();
@@ -320,20 +328,21 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                         .toFlowable()
                         .flatMapIterable(shopsNameLIst -> shopsNameLIst)
                         .map(mapList -> {
-                            return mapList.get("name").toString();
+                            return mapList.get(Const.Firebase.SHOPS_NAME_NAME).toString();
                         })
                         .toList()
                         .toFlowable()
                         .observeOn(AndroidSchedulers.mainThread())
-                        //.doOnSubscribe(c -> getViewState().showLoadingState())
-                        //.doOnTerminate(() -> getViewState().hideLoadingstate())
+                        .doOnSubscribe(c -> {
+                            Log.d("mLog", "doOnSubscribe");
+                            getViewState().showLoadingState();
+                        })
+                        .doOnTerminate(() -> getViewState().hideLoadingstate())
                         .subscribe(shopsNameList -> {
                             getViewState().setShopsNAmeLIst(shopsNameList);
-                            getViewState().hideLoadingstate();
                         }, throwable -> {
                             Log.e("mLog", "Setting spinner data");
                             throwable.printStackTrace();
-                            getViewState().hideLoadingstate();
                         })
         );
     }

@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,7 +22,7 @@ import android.widget.Spinner;
 
 import com.arellomobile.mvp.MvpAppCompatFragment;
 import com.arellomobile.mvp.presenter.InjectPresenter;
-import com.srx.widget.PullToLoadView;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,11 +30,12 @@ import java.util.List;
 import apobooking.apobooking.com.secondhands.MainActivity;
 import apobooking.apobooking.com.secondhands.R;
 import apobooking.apobooking.com.secondhands.entity.Shop;
+import apobooking.apobooking.com.secondhands.ui.CustomCoordinatorLayout;
 import apobooking.apobooking.com.secondhands.ui.CustomLayoutManager;
+import apobooking.apobooking.com.secondhands.ui.CustomRelativeLayout;
 import apobooking.apobooking.com.secondhands.ui.LockableScrollView;
 import apobooking.apobooking.com.secondhands.ui.ShowSelectedShopsButton;
 import apobooking.apobooking.com.secondhands.util.Const;
-import apobooking.apobooking.com.secondhands.util.Paginator;
 import apobooking.apobooking.com.secondhands.util.ShopsAdapter;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -62,12 +65,16 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     ProgressBar progressBarRV;
     @BindView(R.id.parentLayout)
     ViewGroup parentLayout;
+    @BindView(R.id.notTouchableLayout)
+    CustomRelativeLayout notTouchableLayout;
+
+
     private ShopsAdapter shopsAdapter;
     private Unbinder unbinder;
     private ProgressDialog progressDialog;
     private ArrayAdapter<String> citiesAdapter, shopsNameAdapter, updateDayAdapter;
     boolean needToResetLastResult = false;
-    private boolean needLoadingFooter = true;
+   // private boolean needLoadingFooter = true;
 
     public static SearchPropertiesFragment newInstance() {
         return new SearchPropertiesFragment();
@@ -204,7 +211,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         if(shopsAdapter.getLoadingFooterState())
         {
             shopsAdapter.removeLoadingFooter();
-            unlockUI();
+            //unlockUI();
         }
         shopsAdapter.addSelectedShops(shopList);
         allowToSearch = true;
@@ -232,28 +239,15 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
             shopNameSpinner.setSelection(0);
     }
 
-    public void addTestShops() {
-        // allowToSearch = true;
-        List<Shop> shopList = new ArrayList<>();
-        for (int i = 0; i < Const.RecyclerView.TOTAL_ITEM_EACH_LOAD; i++) {
-            Shop shop = new Shop();
-            shop.setName("Name " + System.currentTimeMillis());
-            shop.setUpdateDay(0);
-            shop.setAddress("Test address");
-
-            shopList.add(shop);
-        }
-        shopsAdapter.addSelectedShops(shopList);
-    }
-
-
     @Override
     public void showLoadingState() {
+        Log.d("LoadingState", "Show");
         progressDialog.show();
     }
 
     @Override
     public void hideLoadingstate() {
+        Log.d("LoadingState", "Hide");
         progressDialog.dismiss();
     }
 
@@ -270,14 +264,16 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     @Override
     public void lockUI() {
         Log.d("mLog1", "LOCK");
-        selectedShopsRecyclerView.setClickable(false);
+        notTouchableLayout.setVisibility(View.VISIBLE);
+       // selectedShopsRecyclerView.setClickable(false);
         //((CustomLayoutManager)selectedShopsRecyclerView.getLayoutManager()).setScrollEnabled(false);
     }
 
     @Override
     public void unlockUI() {
         Log.d("mLog1", "UNLOCK");
-        selectedShopsRecyclerView.setClickable(true);
+        notTouchableLayout.setVisibility(View.GONE);
+      //  selectedShopsRecyclerView.setClickable(true);
        // ((CustomLayoutManager)selectedShopsRecyclerView.getLayoutManager()).setScrollEnabled(true);
     }
 
@@ -306,7 +302,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
             if(!shopsAdapter.getLoadingFooterState())
             {
                 shopsAdapter.addLoadingFooter();
-                lockUI();
+                //lockUI();
             }
             String city, shopName, updateDay;
             if (citySpinner.getSelectedItemPosition() != 0)

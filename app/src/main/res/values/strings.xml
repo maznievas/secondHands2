@@ -19,6 +19,7 @@
     <string name="all_days">All days</string>
     <string name="all_shops">All shops</string>
     <string name="all_cities">All cities</string>
+    <string name="address">Address:</string>
     <string-array name="days_of_week">
         <item>@string/all_days</item>
         <item>@string/monday</item>

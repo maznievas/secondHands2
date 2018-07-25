@@ -7,6 +7,7 @@ android {
         applicationId "apobooking.apobooking.com.secondhands"
         minSdkVersion 17
         targetSdkVersion 27
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -31,6 +32,7 @@ dependencies {
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "com.android.support:appcompat-v7:$rootProject.appCompatVersion"
+    implementation 'com.android.support:design:27.1.1'
     //ButterKnife
     implementation "com.jakewharton:butterknife:$rootProject.butterKnifeVersion"
     annotationProcessor "com.jakewharton:butterknife-compiler:$rootProject.butterKnifeVersion"
@@ -40,12 +42,13 @@ dependencies {
     //Google play services
     implementation "com.google.android.gms:play-services-maps:$rootProject.googlePlayServicesMapsVersion"
     //multidex
-    // implementation 'com.android.support:multidex:1.0.3'
+     implementation 'com.android.support:multidex:1.0.3'
     //firebase
     implementation 'com.google.firebase:firebase-core:16.0.1'
     implementation 'com.google.firebase:firebase-database:16.0.1'
     implementation 'com.google.firebase:firebase-firestore:17.0.2'
     implementation 'com.google.firebase:firebase-storage:16.0.1'
+    implementation "com.google.firebase:firebase-auth:16.0.1"
     // FirebaseUI Storage only
     implementation 'com.firebaseui:firebase-ui-storage:0.6.0'
     //dagger 2
@@ -64,9 +67,15 @@ dependencies {
     //ConstraintLAyout
     implementation "com.android.support.constraint:constraint-layout:$constraintLayoutVersion"
     //Material Design spinner
-    implementation 'com.weiwangcn.betterspinner:library-material:1.1.0'
-    //Pull load view
-    implementation 'com.github.tosslife:pullloadview:1.1.0'
+    implementation 'com.weiwangcn.betterspinner:library-material:1.1.0'//remove
+    //bottomSheetLayout
+    implementation 'com.otaliastudios:bottomsheetcoordinatorlayout:1.0.4'
+    //circleIndicator
+    implementation 'fr.avianey.com.viewpagerindicator:library:2.4.1.1@aar'
+    //OKHTTP
+    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    implementation 'org.apache.httpcomponents:httpcore:4.4.1'
+    implementation 'org.apache.httpcomponents:httpclient:4.5'
 }
 
 apply plugin: 'com.google.gms.google-services'

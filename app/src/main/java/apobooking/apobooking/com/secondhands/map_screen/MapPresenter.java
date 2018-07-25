@@ -9,7 +9,22 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.squareup.okhttp.Request;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -117,7 +132,7 @@ public class MapPresenter extends MvpPresenter<MapView> {
 ////                            .map(shop1 -> {
 ////                                Log.d("mLog", "display");
 ////                                Log.d("mLog", "ThreadName 2: " + Thread.currentThread().getName());
-////                                getViewState().getSelectedShop(shop);
+////                                getViewState().addSelectedShop(shop);
 ////                                if(showLocation[0])
 ////                                {
 ////                                    getViewState().showLocation(shop.getLl());
@@ -158,7 +173,7 @@ public class MapPresenter extends MvpPresenter<MapView> {
 //                        getViewState().showLocation(shop.getLl());
 //                        showLocation[0] = false;
 //                    }
-//                    getViewState().getSelectedShop(shop);
+//                    getViewState().addSelectedShop(shop);
 //                })
 ////                .doOnSubscribe(v -> getViewState().showLoadingState())
 ////                .doOnTerminate(() -> getViewState().hideLoadingstate())
@@ -206,6 +221,7 @@ public class MapPresenter extends MvpPresenter<MapView> {
                                     String.valueOf(DayDetectHelper.detectDay(updateDay)), true, needLimit)
                                     .toFlowable();
                         })
+
                         .observeOn(AndroidSchedulers.mainThread())
                         .map(shopMapList -> {
                             getViewState().hideLoadingstate();
@@ -215,17 +231,16 @@ public class MapPresenter extends MvpPresenter<MapView> {
                         .flatMapIterable(list -> list)
                         .concatMap(i-> Observable.just(i).delay(250, TimeUnit.MILLISECONDS).toFlowable(BackpressureStrategy.BUFFER))
                         .map(shopMap -> {
-                            // Random r = new Random();
-                            // int randNum = r.nextInt(5 - 1) + 1;
                             Shop shop = new Shop();
                             shop.setNameId(shopMap.get(Const.Firebase.NAME_ID).toString());
                             shop.setAddress(shopMap.get(Const.Firebase.ADDRESS).toString());
-                            //shop.setLl(new LatLng(47.857616 + randNum, 35.237649 + randNum));
                             shop.setUpdateDay(Integer.parseInt(shopMap.get(Const.Firebase.UPDATE_DAY).toString()));
+                            shop.setImages((ArrayList<String>)shopMap.get(Const.Firebase.IMAGES_ARRAY));
+
                             return shop;
                         })
                         .flatMap(shop -> {
-                            return Flowable.just(geocoder.getFromLocationName(shop.getAddress(), 1))
+                           return Flowable.just(geocoder.getFromLocationName(shop.getAddress(), 1))
                                     .filter(geoList -> geoList.size() > 0)
                                     .map(geoList -> {
                                         android.location.Address address1 = geoList.get(0);
@@ -245,6 +260,23 @@ public class MapPresenter extends MvpPresenter<MapView> {
                                                 .map(shopName -> {
                                                     shop.setName(shopName);
                                                     return shop;
+                                                })
+                                                .map(shop1 -> {
+                                                    Log.d("mLog", "REF: " + Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                                                    gsReference = firebaseStorage
+                                                            .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                                                    shop.setImageReference(gsReference);
+
+                                                    List<StorageReference> storageList = new ArrayList<>();
+                                                    for(String imagePath : shop.getImages())
+                                                    {
+                                                        gsReference = firebaseStorage
+                                                                .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + imagePath);
+                                                        storageList.add(gsReference);
+                                                    }
+                                                    shop.setImagesReference(storageList);
+
+                                                    return shop;
                                                 });
                                     });
 
@@ -257,7 +289,7 @@ public class MapPresenter extends MvpPresenter<MapView> {
                                 getViewState().showLocation(shop.getLl());
                                 showLocation[0] = false;
                             }
-                            getViewState().getSelectedShop(shop);
+                            getViewState().addSelectedShop(shop);
                         })
                         .subscribe(ignored -> {
 
@@ -267,6 +299,82 @@ public class MapPresenter extends MvpPresenter<MapView> {
                         })
         );
     }
+
+  //  public Flowable<LatLng> getLocationByName(String address)
+  //  {
+//        String uri = "http://maps.google.com/maps/api/geocode/json?address=" +
+//                address + "&sensor=false";
+//        HttpGet httpGet = new HttpGet(uri);
+//        StringBuilder stringBuilder = new StringBuilder();
+//
+//        return Flowable.just(new DefaultHttpClient())
+//                .map(defaultHttpClient -> {
+//                    return defaultHttpClient.execute(httpGet);
+//                })
+//                .map(response -> {
+//                    return response.getEntity().getContent();
+//                })
+//                .flatMap(stream -> {
+//                    int b;
+//                    while ((b = stream.read()) != -1) {
+//                        stringBuilder.append((char) b);
+//                    }
+//                    return stringBuilder;
+//                })
+//                .map(stringBuilder1 -> {
+//                    return new JSONObject(stringBuilder.toString());
+//                })
+//                .map(jsonObject -> {
+//                    double lng = ((JSONArray)jsonObject.get("results")).getJSONObject(0)
+//                            .getJSONObject("geometry").getJSONObject("location")
+//                            .getDouble("lng");
+//
+//                    double lat = ((JSONArray)jsonObject.get("results")).getJSONObject(0)
+//                            .getJSONObject("geometry").getJSONObject("location")
+//                            .getDouble("lat");
+//                    return new LatLng(lat, lng);
+//                })
+//
+//
+//        HttpClient client = new DefaultHttpClient();
+//        HttpResponse response;
+//
+//
+//        try {
+//            response = client.execute(httpGet);
+//            HttpEntity entity = response.getEntity();
+//            InputStream stream = entity.getContent();
+//            int b;
+//            while ((b = stream.read()) != -1) {
+//                stringBuilder.append((char) b);
+//            }
+//        } catch (ClientProtocolException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        double lat, lng;
+//
+//        JSONObject jsonObject = new JSONObject();
+//        try {
+//            jsonObject = new JSONObject(stringBuilder.toString());
+//
+//            lng = ((JSONArray)jsonObject.get("results")).getJSONObject(0)
+//                    .getJSONObject("geometry").getJSONObject("location")
+//                    .getDouble("lng");
+//
+//            lat = ((JSONArray)jsonObject.get("results")).getJSONObject(0)
+//                    .getJSONObject("geometry").getJSONObject("location")
+//                    .getDouble("lat");
+//
+//       //     Log.d("latitude", lat);
+//       //     Log.d("longitude", lng);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+
+   // }
 
     public void clear() {
         compositeDisposable.clear();
@@ -279,6 +387,16 @@ public class MapPresenter extends MvpPresenter<MapView> {
                     gsReference = firebaseStorage
                             .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
                     shop.setImageReference(gsReference);
+
+                    List<StorageReference> storageList = new ArrayList<>();
+                    for(String imagePath : shop.getImages())
+                    {
+                        gsReference = firebaseStorage
+                                .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + imagePath);
+                        storageList.add(gsReference);
+                    }
+                    shop.setImagesReference(storageList);
+
                     return shop;
                 })
                 .flatMap(shop -> {
@@ -311,7 +429,7 @@ public class MapPresenter extends MvpPresenter<MapView> {
                 .doOnTerminate(() -> getViewState().hideLoadingstate())
                 .subscribe(shop -> {
                     getViewState().showLocation(shop.getLl());
-                    getViewState().getSelectedShop(shop);
+                    getViewState().addSelectedShop(shop);
                 }, throwable -> {
                     Log.e("mLog", "displaying selected shop error");
                     throwable.printStackTrace();

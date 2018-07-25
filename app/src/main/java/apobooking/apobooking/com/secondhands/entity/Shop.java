@@ -9,6 +9,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @IgnoreExtraProperties
 @Entity
 public class Shop {
@@ -26,6 +29,10 @@ public class Shop {
     @Ignore
     StorageReference imageReference;
     String imageName;
+    @Ignore
+    ArrayList<String> images;
+    @Ignore
+    List<StorageReference> imagesReference;
 
     public String getAddress() {
         return address;
@@ -97,5 +104,21 @@ public class Shop {
 
     public void setImageName(String imageName) {
         this.imageName = imageName;
+    }
+
+    public ArrayList<String> getImages() {
+        return images;
+    }
+
+    public void setImages(ArrayList<String> images) {
+        this.images = images;
+    }
+
+    public List<StorageReference> getImagesReference() {
+        return imagesReference;
+    }
+
+    public void setImagesReference(List<StorageReference> imagesReference) {
+        this.imagesReference = imagesReference;
     }
 }

@@ -161,9 +161,11 @@ public class ShopRemoteDataSource implements ShopDataSource {
                                     list.add(map);
                                     // Log.d();
                                 }
-                                if (queryDocumentSnapshots.size() > 0)
+                                if (queryDocumentSnapshots.size() > 0) {
                                     lastResult = queryDocumentSnapshots.getDocuments()
                                             .get(queryDocumentSnapshots.size() - 1);
+                                    Log.d("DocumentSnapShot", "id: " + lastResult.getId());
+                                }
 
                                 emitter.onSuccess(list);
                                 emitter.onComplete();
@@ -348,6 +350,7 @@ public class ShopRemoteDataSource implements ShopDataSource {
                                     shop.setUpdateDay(Integer
                                             .parseInt(map.get(Const.Firebase.UPDATE_DAY).toString()));
                                     shop.setAddress(map.get(Const.Firebase.ADDRESS).toString());
+                                    shop.setImages((ArrayList<String>)map.get(Const.Firebase.IMAGES_ARRAY));
 
                                     e.onNext(shop);
                                     e.onComplete();

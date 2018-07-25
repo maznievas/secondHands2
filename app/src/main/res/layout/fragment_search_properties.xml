@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/lightYellow"
+    android:id="@+id/parentLayout"
   >
 
     <android.support.v4.widget.NestedScrollView
@@ -18,7 +19,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="@dimen/normal_padding"
-            android:id="@+id/parentLayout">
+            >
+
 
             <LinearLayout
                 android:id="@+id/searchContainerLayout"
@@ -120,4 +122,11 @@
 
         </RelativeLayout>
     </android.support.v4.widget.NestedScrollView>
-</android.support.design.widget.CoordinatorLayout>
+
+    <apobooking.apobooking.com.secondhands.ui.CustomRelativeLayout
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:id="@+id/notTouchableLayout"
+        android:visibility="gone"
+        android:clickable="false"/>
+</FrameLayout>

@@ -15,6 +15,9 @@ public abstract class Const {
         public static final String UPDATE_DAY = "updateDay";
         public static final String ADDRESS = "address";
         public static final String BASE_IMAGE_REFERENCE = "gs://secondhand-208310.appspot.com/";
+        public static final String SHOPS_NAME_NAME = "name";
+        public static final String CITIES_NAME = "name";
+        public static final String IMAGES_ARRAY = "images";
 
         public class  Tables{
             public static final String SHOPS = "shops";
