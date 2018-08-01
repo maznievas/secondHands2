@@ -191,12 +191,12 @@ public class MapFragment extends MvpAppCompatFragment implements MapView, OnTouc
 
                 if (getArguments().getBoolean(Const.Bundle.LOAD_ONE_SHOP, false)) {
                     mapPresenter.displaySelectedShop(getArguments().getString(Const.Bundle.SHOP_ID),
-                            geocoder);
+                            geocoder, getString(R.string.geocoding_api_key));
                 } else
                     mapPresenter.selectShops(getArguments().getString(Const.Bundle.SHOP_CITY),
                             getArguments().getString(Const.Bundle.SHOP_NAME),
                             getArguments().getString(Const.Bundle.SHOP_UPDATE_DAY),
-                            geocoder, false);
+                            geocoder, false, getString(R.string.geocoding_api_key));
             }
         });
         getChildFragmentManager().beginTransaction().replace(R.id.map, mapFragment).commit();

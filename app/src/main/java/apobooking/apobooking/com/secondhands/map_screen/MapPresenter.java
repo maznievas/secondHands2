@@ -9,20 +9,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.squareup.okhttp.Request;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -39,9 +31,16 @@ import apobooking.apobooking.com.secondhands.util.DayDetectHelper;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.SingleEmitter;
+import io.reactivex.SingleOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Created by sts on 21.06.18.
@@ -71,8 +70,8 @@ public class MapPresenter extends MvpPresenter<MapView> {
     }
 
 
-
-    public void selectShops(String city, String shopsName, String updateDay, Geocoder geocoder, boolean needLimit) {
+    public void selectShops(String city, String shopsName, String updateDay, Geocoder geocoder,
+                            boolean needLimit, String geocodingApiKey) {
 //        final String[] cityIdFinal = new String[1];
 //        final String[] shopsNameIdFinal = new String[1];
 //        final boolean[] showLocation = {true};
@@ -229,26 +228,27 @@ public class MapPresenter extends MvpPresenter<MapView> {
                         })
                         .observeOn(Schedulers.io())
                         .flatMapIterable(list -> list)
-                        .concatMap(i-> Observable.just(i).delay(250, TimeUnit.MILLISECONDS).toFlowable(BackpressureStrategy.BUFFER))
+                        .concatMap(i -> Observable.just(i).delay(250, TimeUnit.MILLISECONDS).toFlowable(BackpressureStrategy.BUFFER))
                         .map(shopMap -> {
                             Shop shop = new Shop();
                             shop.setNameId(shopMap.get(Const.Firebase.NAME_ID).toString());
                             shop.setAddress(shopMap.get(Const.Firebase.ADDRESS).toString());
                             shop.setUpdateDay(Integer.parseInt(shopMap.get(Const.Firebase.UPDATE_DAY).toString()));
-                            shop.setImages((ArrayList<String>)shopMap.get(Const.Firebase.IMAGES_ARRAY));
+                            shop.setImages((ArrayList<String>) shopMap.get(Const.Firebase.IMAGES_ARRAY));
 
                             return shop;
                         })
                         .flatMap(shop -> {
-                           return Flowable.just(geocoder.getFromLocationName(shop.getAddress(), 1))
-                                    .filter(geoList -> geoList.size() > 0)
-                                    .map(geoList -> {
-                                        android.location.Address address1 = geoList.get(0);
-                                        double lat = address1.getLatitude();
-                                        double lng = address1.getLongitude();
-
-                                        return new LatLng(lat, lng);
-                                    })
+                            //  return Flowable.just(geocoder.getFromLocationName(shop.getAddress(), 1))
+                            return getLocationByName(shop.getAddress(), geocodingApiKey)
+                                    // .filter(geoList -> geoList.size() > 0)
+//                                    .map(geoList -> {
+//                                        android.location.Address address1 = geoList.get(0);
+//                                        double lat = address1.getLatitude();
+//                                        double lng = address1.getLongitude();
+//
+//                                        return new LatLng(lat, lng);
+//                                    })
                                     .map(ll -> {
                                         shop.setLl(ll);
                                         Log.d("mLog", "setLL");
@@ -268,8 +268,7 @@ public class MapPresenter extends MvpPresenter<MapView> {
                                                     shop.setImageReference(gsReference);
 
                                                     List<StorageReference> storageList = new ArrayList<>();
-                                                    for(String imagePath : shop.getImages())
-                                                    {
+                                                    for (String imagePath : shop.getImages()) {
                                                         gsReference = firebaseStorage
                                                                 .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + imagePath);
                                                         storageList.add(gsReference);
@@ -300,42 +299,48 @@ public class MapPresenter extends MvpPresenter<MapView> {
         );
     }
 
-  //  public Flowable<LatLng> getLocationByName(String address)
-  //  {
-//        String uri = "http://maps.google.com/maps/api/geocode/json?address=" +
-//                address + "&sensor=false";
-//        HttpGet httpGet = new HttpGet(uri);
-//        StringBuilder stringBuilder = new StringBuilder();
-//
-//        return Flowable.just(new DefaultHttpClient())
-//                .map(defaultHttpClient -> {
-//                    return defaultHttpClient.execute(httpGet);
-//                })
-//                .map(response -> {
-//                    return response.getEntity().getContent();
-//                })
-//                .flatMap(stream -> {
-//                    int b;
-//                    while ((b = stream.read()) != -1) {
-//                        stringBuilder.append((char) b);
-//                    }
-//                    return stringBuilder;
-//                })
-//                .map(stringBuilder1 -> {
-//                    return new JSONObject(stringBuilder.toString());
-//                })
-//                .map(jsonObject -> {
-//                    double lng = ((JSONArray)jsonObject.get("results")).getJSONObject(0)
-//                            .getJSONObject("geometry").getJSONObject("location")
-//                            .getDouble("lng");
-//
-//                    double lat = ((JSONArray)jsonObject.get("results")).getJSONObject(0)
-//                            .getJSONObject("geometry").getJSONObject("location")
-//                            .getDouble("lat");
-//                    return new LatLng(lat, lng);
-//                })
-//
-//
+    private Single<Response> sdfsdf(Call call) {
+        return Single.create(emitter -> {
+            try {
+                emitter.onSuccess(call.execute());
+            } catch (Exception ex) {
+                emitter.onError(ex);
+            }
+        });
+    }
+
+    public Flowable<LatLng> getLocationByName(String address, String mapsApiKey) throws UnsupportedEncodingException {
+
+        String uri = "https://maps.google.com/maps/api/geocode/json?key=" + mapsApiKey +
+                "&address=" + URLEncoder.encode(address, "UTF-8") + "&sensor=false";
+        Request request = new Request.Builder()
+                .url(uri)
+                .build();
+
+        return Flowable.just(new OkHttpClient())
+                .flatMap(defaultHttpClient -> {
+                    return Flowable.just(defaultHttpClient.newCall(request));
+                })
+                .flatMapSingle(this::sdfsdf)
+                .filter(response -> response != null)
+                .map(response -> {
+                    return response.body().string();
+                })
+                .map(response -> {
+                    return new JSONObject(response);
+                })
+                .map(jsonObject -> {
+                    double lng = ((JSONArray) jsonObject.get("results")).getJSONObject(0)
+                            .getJSONObject("geometry").getJSONObject("location")
+                            .getDouble("lng");
+
+                    double lat = ((JSONArray) jsonObject.get("results")).getJSONObject(0)
+                            .getJSONObject("geometry").getJSONObject("location")
+                            .getDouble("lat");
+                    return new LatLng(lat, lng);
+                });
+
+
 //        HttpClient client = new DefaultHttpClient();
 //        HttpResponse response;
 //
@@ -374,66 +379,67 @@ public class MapPresenter extends MvpPresenter<MapView> {
 //            e.printStackTrace();
 //        }
 
-   // }
+    }
 
     public void clear() {
         compositeDisposable.clear();
     }
 
-    public void displaySelectedShop(String shopId, Geocoder geocoder) {
+    public void displaySelectedShop(String shopId, Geocoder geocoder, String geoCoderApiKey) {
         compositeDisposable.add(shopRepository.getShopById(shopId)
-                .map(shop -> {
-                    Log.d("mLog", "REF: " + Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
-                    gsReference = firebaseStorage
-                            .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
-                    shop.setImageReference(gsReference);
+                        .map(shop -> {
+                            Log.d("mLog", "REF: " + Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                            gsReference = firebaseStorage
+                                    .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                            shop.setImageReference(gsReference);
 
-                    List<StorageReference> storageList = new ArrayList<>();
-                    for(String imagePath : shop.getImages())
-                    {
-                        gsReference = firebaseStorage
-                                .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + imagePath);
-                        storageList.add(gsReference);
-                    }
-                    shop.setImagesReference(storageList);
+                            List<StorageReference> storageList = new ArrayList<>();
+                            for (String imagePath : shop.getImages()) {
+                                gsReference = firebaseStorage
+                                        .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + imagePath);
+                                storageList.add(gsReference);
+                            }
+                            shop.setImagesReference(storageList);
 
-                    return shop;
-                })
-                .flatMap(shop -> {
-                    return Flowable.just(geocoder.getFromLocationName(shop.getAddress(), 1))
-                            .filter(geoList -> geoList.size() > 0)
-                            .map(geoList -> {
-                                android.location.Address address1 = geoList.get(0);
-                                double lat = address1.getLatitude();
-                                double lng = address1.getLongitude();
-
-                                return new LatLng(lat, lng);
-                            })
-                            .map(ll -> {
-                                shop.setLl(ll);
-                                Log.d("mLog", "setLL");
-                                return shop;
-                            })
-                            .flatMap(shop22 -> {
-                                return shopRepository.getShopNameById(shop.getNameId())
-                                        .subscribeOn(Schedulers.io())
-                                        .map(shopName -> {
-                                            shop.setName(shopName);
-                                            return shop;
-                                        });
-                            });
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(c -> getViewState().showLoadingState())
-                .doOnTerminate(() -> getViewState().hideLoadingstate())
-                .subscribe(shop -> {
-                    getViewState().showLocation(shop.getLl());
-                    getViewState().addSelectedShop(shop);
-                }, throwable -> {
-                    Log.e("mLog", "displaying selected shop error");
-                    throwable.printStackTrace();
-                })
+                            return shop;
+                        })
+                        .flatMap(shop -> {
+//                    return Flowable.just(geocoder.getFromLocationName(shop.getAddress(), 1))
+//                            .filter(geoList -> geoList.size() > 0)
+//                            .map(geoList -> {
+//                                android.location.Address address1 = geoList.get(0);
+//                                double lat = address1.getLatitude();
+//                                double lng = address1.getLongitude();
+//
+//                                return new LatLng(lat, lng);
+//                            })
+                            return getLocationByName(shop.getAddress(), geoCoderApiKey)
+                                    .map(ll -> {
+                                        shop.setLl(ll);
+                                        Log.d("mLog", "setLL");
+                                        return shop;
+                                    })
+                                    .flatMap(shop22 -> {
+                                        return shopRepository.getShopNameById(shop.getNameId())
+                                                .subscribeOn(Schedulers.io())
+                                                .map(shopName -> {
+                                                    shop.setName(shopName);
+                                                    return shop;
+                                                });
+                                    })
+                                    .subscribeOn(Schedulers.io());
+                        })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnSubscribe(c -> getViewState().showLoadingState())
+                        .doOnTerminate(() -> getViewState().hideLoadingstate())
+                        .subscribe(shop -> {
+                            getViewState().showLocation(shop.getLl());
+                            getViewState().addSelectedShop(shop);
+                        }, throwable -> {
+                            Log.e("mLog", "displaying selected shop error");
+                            throwable.printStackTrace();
+                        })
         );
     }
 }
