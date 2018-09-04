@@ -9,6 +9,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 
 import com.arellomobile.mvp.MvpAppCompatFragment;
@@ -42,6 +44,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import io.reactivex.Flowable;
+
+import static android.view.View.FOCUS_DOWN;
 
 public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         SearchPropertiesView, ShopsAdapter.ShopItemListener {
@@ -74,7 +78,9 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     private ProgressDialog progressDialog;
     private ArrayAdapter<String> citiesAdapter, shopsNameAdapter, updateDayAdapter;
     boolean needToResetLastResult = false;
-   // private boolean needLoadingFooter = true;
+    CustomLayoutManager mLayoutManager;
+    public int positionToScroll;
+    // private boolean needLoadingFooter = true;
 
     public static SearchPropertiesFragment newInstance() {
         return new SearchPropertiesFragment();
@@ -83,6 +89,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        positionToScroll = 0;
     }
 
     @Nullable
@@ -95,7 +102,8 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     }
 
     public void init() {
-        CustomLayoutManager mLayoutManager = new CustomLayoutManager(getContext());
+         // CustomLayoutManager mLayoutManager = new CustomLayoutManager(getContext());
+        mLayoutManager = new CustomLayoutManager(getContext());
         selectedShopsRecyclerView.setLayoutManager(mLayoutManager);
         shopsAdapter = new ShopsAdapter(getContext());
         shopsAdapter.setShopItemListener(this);
@@ -116,9 +124,10 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
                         // if (isLoadData()) {
 
                         if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
-                            Log.d("mLog", "Load data NOW");
+                            Log.d("mLog", "Condition to load data: " + String.valueOf(visibleItemCount + pastVisiblesItems)
+                                    + " >= " + String.valueOf(totalItemCount));
                             needToResetLastResult = false;
-                            selectShops();
+                            selectShops(false);
                         }
                         //  }
                     }
@@ -138,7 +147,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         progressDialog.setMessage(getString(R.string.loading));
         progressDialog.setCancelable(false);
 
-        searchPropertiesPresenter.loadSpinnerData();
+        //searchPropertiesPresenter.loadSpinnerData();
 
         //paginator = new Paginator(getContext(), pullToLoadView, this);
         // paginator.initializePaginator();
@@ -187,6 +196,35 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
 
             }
         });
+
+        shopsAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                //mManager.smoothScrollToPosition(mMessages, null, mAdapter.getItemCount());
+                if(itemCount == 1)
+                    mLayoutManager.smoothScrollToPosition(selectedShopsRecyclerView, null, shopsAdapter.getItemCount()-1);
+            }
+
+            @Override
+            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+                super.onItemRangeMoved(fromPosition, toPosition, itemCount);
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
+                super.onItemRangeChanged(positionStart, itemCount, payload);
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                super.onItemRangeRemoved(positionStart, itemCount);
+            }
+
+            @Override
+            public void onChanged() {
+                super.onChanged();
+            }
+        });
     }
 
     @Override
@@ -198,7 +236,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
 
     @OnClick(R.id.applyButton)
     public void onApplyClicked() {
-     //   ((MainActivity) getActivity()).openMap();
+        //   ((MainActivity) getActivity()).openMap();
     }
 
     @Override
@@ -208,10 +246,8 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
 
     @Override
     public void addSelectedShops(List<Shop> shopList) {
-        if(shopsAdapter.getLoadingFooterState())
-        {
+        if (shopsAdapter.getLoadingFooterState()) {
             shopsAdapter.removeLoadingFooter();
-            //unlockUI();
         }
         shopsAdapter.addSelectedShops(shopList);
         allowToSearch = true;
@@ -241,13 +277,13 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
 
     @Override
     public void showLoadingState() {
-        Log.d("LoadingState", "Show");
+        Log.d("mLog", "Show");
         progressDialog.show();
     }
 
     @Override
     public void hideLoadingstate() {
-        Log.d("LoadingState", "Hide");
+        Log.d("mLog", "Hide");
         progressDialog.dismiss();
     }
 
@@ -264,43 +300,41 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     @Override
     public void lockUI() {
         Log.d("mLog1", "LOCK");
-        notTouchableLayout.setVisibility(View.VISIBLE);
-       // selectedShopsRecyclerView.setClickable(false);
-        //((CustomLayoutManager)selectedShopsRecyclerView.getLayoutManager()).setScrollEnabled(false);
-    }
+       // getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+       //         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+         }
 
     @Override
     public void unlockUI() {
         Log.d("mLog1", "UNLOCK");
-        notTouchableLayout.setVisibility(View.GONE);
-      //  selectedShopsRecyclerView.setClickable(true);
-       // ((CustomLayoutManager)selectedShopsRecyclerView.getLayoutManager()).setScrollEnabled(true);
+       // getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+       }
+
+    @Override
+    public void scrollToFindButton() {
+        nestedScrollView.scrollBy((int) showSelectedShopsButton.getX(), (int) showSelectedShopsButton.getY());
     }
 
     @OnClick(R.id.allShopsLayout)
     public void ShowSelectedShopsButton() {
         showSelectedShopsButton.changeState();
 
-        if (selectedShopsRecyclerView.getVisibility() == View.VISIBLE)
-        {
+        if (selectedShopsRecyclerView.getVisibility() == View.VISIBLE) {
             selectedShopsRecyclerView.setVisibility(View.GONE);
             shopsAdapter.clear();
             needToResetLastResult = true;
-        }
-        else
-        {
+        } else {
             selectedShopsRecyclerView.setVisibility(View.VISIBLE);
             //needToResetLastResult = false;
         }
-        selectShops();
+        selectShops(true);
         //paginator.initLoad();
     }
 
-    public void selectShops() {
+    public void selectShops(boolean needToScroll) {
         Log.d("mLog", "select shop");
         if (showSelectedShopsButton.getArrowDown()) {
-            if(!shopsAdapter.getLoadingFooterState())
-            {
+            if (!shopsAdapter.getLoadingFooterState()) {
                 shopsAdapter.addLoadingFooter();
                 //lockUI();
             }
@@ -317,14 +351,14 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
                 updateDay = updateDayAdapter.getItem(updateDaySpinner.getSelectedItemPosition());
             else
                 updateDay = "";
-            searchPropertiesPresenter.selectShops(city, shopName, updateDay, needToResetLastResult, true);
+            searchPropertiesPresenter.selectShops(city, shopName, updateDay, needToResetLastResult, true,
+                    needToScroll);
             //allowToSearch = true;
         }
     }
 
     @OnClick(R.id.showOnMapButton)
-    public void onShowOnMapButtonClicked()
-    {
+    public void onShowOnMapButtonClicked() {
         String city, shopName, updateDay;
         if (citySpinner.getSelectedItemPosition() != 0)
             city = citiesAdapter.getItem(citySpinner.getSelectedItemPosition());
@@ -344,5 +378,32 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     @Override
     public void shopSelected(String shopId) {
         ((MainActivity) getActivity()).openMapSelectedShop(shopId);
+    }
+
+    @Override
+    public void scrollToBottom() {
+//        // Scroll to bottom on new messages
+//
+//          selectedShopsRecyclerView.requestFocus(FOCUS_DOWN);
+//        nestedScrollView.fullScroll(View.FOCUS_DOWN);
+//        if(shopsAdapter.getItemCount() > 0)
+//        ((selectedShopsRecyclerView.getLayoutManager()))
+//                .smoothScrollToPosition(selectedShopsRecyclerView, new RecyclerView.State(),
+//                        shopsAdapter.getItemCount() - 1);
+
+       // mLayoutManager.scrollToPositionWithOffset(shopsAdapter.getItemCount(), 200);
+
+       // selectedShopsRecyclerView.smoothScrollToPosition(shopsAdapter.getItemCount() - 2);
+
+//        ViewGroup.MarginLayoutParams marginLayoutParams =
+//                (ViewGroup.MarginLayoutParams) selectedShopsRecyclerView.getLayoutParams();
+//        marginLayoutParams.setMargins(0, 0, 0, 100);
+//        selectedShopsRecyclerView.setLayoutParams(marginLayoutParams);
+    }
+
+    @Override
+    public void scrollTo(int position) {
+        positionToScroll = position;
+        //    mLayoutManager.scrollToPositionWithOffset(position, 200);
     }
 }

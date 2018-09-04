@@ -70,6 +70,7 @@ public class ImageFragment extends Fragment {
                 .load(storageReference)
                // .diskCacheStrategy(DiskCacheStrategy.NONE)
                // .skipMemoryCache(true)
+                .error(R.drawable.no_photos_view)
                 .into(imageView);
 
         return layoutView;

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -110,11 +111,18 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
 //        );
     }
 
+    @Override
+    protected void onFirstViewAttach() {
+        super.onFirstViewAttach();
+        loadSpinnerData();
+    }
 
     public void init() {
         compositeDisposable = new CompositeDisposable();
 
         storageRef = firebaseStorage.getReference();
+
+
         // Create a reference to a file from a Google Cloud Storage URI
 
         //    databaseReference.addListenerForSingleValueEvent(postListener);
@@ -170,7 +178,7 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
     }
 
     public void selectShops(String city, String shopsName, String updateDay, boolean needToResetLastResult,
-             boolean needLimit) {
+             boolean needLimit, boolean needToScroll) {
         final String[] cityIdFinal = new String[1];
         final String[] shopsNameIdFinal = new String[1];
         compositeDisposable.add(shopRepository.getAllCitiesEntity()
@@ -244,6 +252,8 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                 .doOnTerminate(() -> getViewState().unlockUI())
                 .subscribe(shopList -> {
                     getViewState().addSelectedShops(shopList);
+                   // if(needToScroll)
+                    //    getViewState().scrollToFindButton();
                 }, throwable -> {
                     Log.e("mLog", "Update shops");
                     throwable.printStackTrace();
@@ -307,10 +317,8 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
    // }
 
     public void loadSpinnerData() {
-       // getViewState().showLoadingState();
         compositeDisposable.add(
                 shopRepository.getAllCities()
-                        .subscribeOn(Schedulers.io())
                         .toFlowable()
                         .flatMapIterable(citiesList -> citiesList)
                         .map(mapList -> {
@@ -332,12 +340,16 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                         })
                         .toList()
                         .toFlowable()
+                        .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnSubscribe(c -> {
                             Log.d("mLog", "doOnSubscribe");
                             getViewState().showLoadingState();
                         })
-                        .doOnTerminate(() -> getViewState().hideLoadingstate())
+                        .doAfterTerminate(() -> {
+                            Log.d("mLog", "doAfterTerminate");
+                            getViewState().hideLoadingstate();
+                        })
                         .subscribe(shopsNameList -> {
                             getViewState().setShopsNAmeLIst(shopsNameList);
                         }, throwable -> {

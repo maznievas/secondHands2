@@ -86,16 +86,24 @@ public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                     }
                 });
 
+                int placeholder = R.color.recytclerViewItemColor;
+                switch(shop.getName()){
+                    case Const.ShopsName.ECONOM_CLASS:
+                        placeholder = R.drawable.econom_logo;
+                        break;
+                }
+
                 Glide.with(context)
                         .using(new FirebaseImageLoader())
                         .load(shop.getImageReference())
+                        .error(placeholder)
                         .into(holder.shopImage);
 
                 if(position == shopList.size() - 1)
-                    //       bottomListener.bottomReached();
                     SearchPropertiesFragment.allowToSearch = true;
                 break;
             case LOADING:
+                shopItemListener.scrollToBottom();
                 break;
         }
     }
@@ -155,8 +163,12 @@ public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     public void addSelectedShops(List<Shop> shopList) {
         Log.d("mLog", "ShopListSize: " + shopList.size());
+        int previousShopListSize = this.shopList.size();
         this.shopList.addAll(shopList);
         notifyDataSetChanged();
+        int amountDifference = this.shopList.size() - shopList.size();
+        if(amountDifference > 0 && previousShopListSize != this.shopList.size())
+            shopItemListener.scrollTo(amountDifference - 1);
     }
 
     public boolean getLoadingFooterState() {
@@ -201,5 +213,8 @@ public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     public interface ShopItemListener{
         void shopSelected(String shopId);
+        void scrollToBottom();
+
+        void scrollTo(int position);
     }
 }

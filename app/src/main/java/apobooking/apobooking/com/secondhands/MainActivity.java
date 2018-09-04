@@ -1,5 +1,7 @@
 package apobooking.apobooking.com.secondhands;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,6 +16,8 @@ import apobooking.apobooking.com.secondhands.map_screen.MapFragment;
 import apobooking.apobooking.com.secondhands.search_properties_screen.SearchPropertiesFragment;
 import apobooking.apobooking.com.secondhands.util.Const;
 import apobooking.apobooking.com.secondhands.util.OnTouchOutsideViewListener;
+
+import static android.content.Context.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -88,6 +92,14 @@ public class MainActivity extends AppCompatActivity {
         Toolbar topToolBar = (Toolbar)findViewById(R.id.main_toolbar);
         setSupportActionBar(topToolBar);
         getSupportActionBar().setTitle("TEST TITLE");
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(getSupportFragmentManager().getFragments().get(getSupportFragmentManager().getFragments().size() - 1) instanceof SearchPropertiesFragment)
+            finish();
+        else
+            super.onBackPressed();
     }
 
     /**

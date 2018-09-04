@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="@dimen/normal_padding"
+            android:focusableInTouchMode="true"
             >
 
 
@@ -88,16 +89,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/button_height"
                 android:layout_below="@+id/searchContainerLayout"
-                android:layout_marginTop="@dimen/medium_padding" />
+                android:layout_marginTop="@dimen/medium_padding"
+                android:layout_marginBottom="@dimen/normal_padding"/>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/alShopsRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="fill_parent"
+                android:layout_height="match_parent"
                 android:layout_below="@+id/allShopsLayout"
-                android:layout_marginTop="@dimen/normal_padding"
                 android:visibility="gone"
                 tools:listitem="@layout/shop_item"
+                android:focusable="true"
+                android:descendantFocusability="blocksDescendants"
+                android:focusableInTouchMode="true"
+
                />
 
             <ProgressBar

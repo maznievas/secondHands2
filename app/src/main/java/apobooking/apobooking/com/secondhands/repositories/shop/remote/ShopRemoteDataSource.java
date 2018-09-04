@@ -112,29 +112,7 @@ public class ShopRemoteDataSource implements ShopDataSource {
 
         Log.d("mLog", "Detected city: " + city);
         Log.d("mLog", "Detected name: " + shopsName);
-//
-//        Task finalTaskCity = taskCity;
-//        Task finalTaskUpdateDay = taskUpdateDay;
-//        Task finalTaskName = taskName;
-//
-//        int taskSize = 0;
-//        if (finalTaskCity != null)
-//            taskSize++;
-//        if (finalTaskName != null)
-//            taskSize++;
-//        if (finalTaskUpdateDay != null)
-//            taskSize++;
-//
-//        int iterator = -1;
-//        Task[] tasksArray = new Task[taskSize];
-//        if (finalTaskCity != null)
-//            tasksArray[++iterator] = finalTaskCity;
-//        if (finalTaskName != null)
-//            tasksArray[++iterator] = finalTaskName;
-//        if (finalTaskUpdateDay != null)
-//            tasksArray[++iterator] = finalTaskUpdateDay;
 
-        //     Query finalQuery = query;
         if (needToResetLastResult)
             lastResult = null;
 
@@ -142,43 +120,51 @@ public class ShopRemoteDataSource implements ShopDataSource {
             collection = collection.startAfter(lastResult);
         Query finalCollection = collection;
 
-        return Maybe.create(new MaybeOnSubscribe<List<Map<String, Object>>>() {
-            @Override
-            public void subscribe(MaybeEmitter<List<Map<String, Object>>> emitter) throws Exception {
-                finalCollection
-//                            .whereEqualTo(Const.Firebase.UPDATE_DAY,
-//                                    Integer.parseInt(updateDay))
-//                            .whereEqualTo(Const.Firebase.CITY_ID, city)
-//                            .whereEqualTo(Const.Firebase.NAME_ID, shopsName)
-                        .get()
-                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                            @Override
-                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                List<Map<String, Object>> list = new ArrayList<>();
-                                for (QueryDocumentSnapshot querySnapshot : queryDocumentSnapshots) {
-                                    Map<String, Object> map = querySnapshot.getData();
-                                    map.put(Const.Firebase.SHOP_ID, querySnapshot.getId());
-                                    list.add(map);
-                                    // Log.d();
-                                }
-                                if (queryDocumentSnapshots.size() > 0) {
-                                    lastResult = queryDocumentSnapshots.getDocuments()
-                                            .get(queryDocumentSnapshots.size() - 1);
-                                    Log.d("DocumentSnapShot", "id: " + lastResult.getId());
-                                }
-
-                                emitter.onSuccess(list);
-                                emitter.onComplete();
+        return Maybe.create(emitter -> finalCollection
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Map<String, Object>> list = new ArrayList<>();
+                    if (lastResult != null && queryDocumentSnapshots.size() > 0) {
+                        if (!lastResult.equals(queryDocumentSnapshots.getDocuments()
+                                .get(queryDocumentSnapshots.size() - 1))) {
+                            for (QueryDocumentSnapshot querySnapshot : queryDocumentSnapshots) {
+                                Map<String, Object> map = querySnapshot.getData();
+                                map.put(Const.Firebase.SHOP_ID, querySnapshot.getId());
+                                list.add(map);
                             }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
+                        } else
+                            return;
+                    } else
+                        for (QueryDocumentSnapshot querySnapshot : queryDocumentSnapshots) {
+                            Map<String, Object> map = querySnapshot.getData();
+                            map.put(Const.Firebase.SHOP_ID, querySnapshot.getId());
+                            list.add(map);
+                        }
 
-                            }
-                        });
-            }
-        });
+                    if (queryDocumentSnapshots.size() > 0) {
+//                        if(lastResult != null) {
+//                            if(!lastResult.equals(queryDocumentSnapshots.getDocuments()))
+//                                lastResult = queryDocumentSnapshots.getDocuments()
+//                                    .get(queryDocumentSnapshots.size() - 1);
+//                            else
+//                                lastResult = null;
+//                        }
+//                        else
+                        lastResult = queryDocumentSnapshots.getDocuments()
+                                .get(queryDocumentSnapshots.size() - 1);
+                        Log.d("DocumentSnapShot", "id: " + lastResult.getId());
+                    }
+
+                    emitter.onSuccess(list);
+                    emitter.onComplete();
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("mLog", "Error getting shops");
+                        e.printStackTrace();
+                    }
+                }));
         // }
     }
 
@@ -350,12 +336,11 @@ public class ShopRemoteDataSource implements ShopDataSource {
                                     shop.setUpdateDay(Integer
                                             .parseInt(map.get(Const.Firebase.UPDATE_DAY).toString()));
                                     shop.setAddress(map.get(Const.Firebase.ADDRESS).toString());
-                                    shop.setImages((ArrayList<String>)map.get(Const.Firebase.IMAGES_ARRAY));
+                                    shop.setImages((ArrayList<String>) map.get(Const.Firebase.IMAGES_ARRAY));
 
                                     e.onNext(shop);
                                     e.onComplete();
-                                }
-                                else {
+                                } else {
                                     Log.w("mLog", "Error getting single shop", task.getException());
                                 }
                             }

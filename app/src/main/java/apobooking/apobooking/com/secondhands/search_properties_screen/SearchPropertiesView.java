@@ -31,4 +31,6 @@ public interface SearchPropertiesView extends MvpView{
     void hideProgressBar();
     void lockUI();
     void unlockUI();
+
+    void scrollToFindButton();
 }

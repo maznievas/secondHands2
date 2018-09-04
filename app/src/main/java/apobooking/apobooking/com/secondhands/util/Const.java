@@ -38,5 +38,7 @@ public abstract class Const {
         public static final String LOAD_ONE_SHOP = "loadOneShop";
     }
 
-
+    class ShopsName{
+        public static final String ECONOM_CLASS = "Econom class";
+    }
 }

@@ -1,5 +1,6 @@
 package apobooking.apobooking.com.secondhands.map_screen;
 
+import android.location.Address;
 import android.location.Geocoder;
 import android.util.Log;
 
@@ -13,6 +14,7 @@ import com.google.firebase.storage.StorageReference;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -240,7 +242,7 @@ public class MapPresenter extends MvpPresenter<MapView> {
                         })
                         .flatMap(shop -> {
                             //  return Flowable.just(geocoder.getFromLocationName(shop.getAddress(), 1))
-                            return getLocationByName(shop.getAddress(), geocodingApiKey)
+                            return getLocationByName(shop.getAddress(), geocodingApiKey, geocoder)
                                     // .filter(geoList -> geoList.size() > 0)
 //                                    .map(geoList -> {
 //                                        android.location.Address address1 = geoList.get(0);
@@ -309,75 +311,56 @@ public class MapPresenter extends MvpPresenter<MapView> {
         });
     }
 
-    public Flowable<LatLng> getLocationByName(String address, String mapsApiKey) throws UnsupportedEncodingException {
+    public Flowable<LatLng> getLocationByName(String address, String mapsApiKey,
+                                              Geocoder geocoder) throws UnsupportedEncodingException {
 
-        String uri = "https://maps.google.com/maps/api/geocode/json?key=" + mapsApiKey +
-                "&address=" + URLEncoder.encode(address, "UTF-8") + "&sensor=false";
-        Request request = new Request.Builder()
-                .url(uri)
-                .build();
-
-        return Flowable.just(new OkHttpClient())
-                .flatMap(defaultHttpClient -> {
-                    return Flowable.just(defaultHttpClient.newCall(request));
-                })
-                .flatMapSingle(this::sdfsdf)
-                .filter(response -> response != null)
-                .map(response -> {
-                    return response.body().string();
-                })
-                .map(response -> {
-                    return new JSONObject(response);
-                })
-                .map(jsonObject -> {
-                    double lng = ((JSONArray) jsonObject.get("results")).getJSONObject(0)
-                            .getJSONObject("geometry").getJSONObject("location")
-                            .getDouble("lng");
-
-                    double lat = ((JSONArray) jsonObject.get("results")).getJSONObject(0)
-                            .getJSONObject("geometry").getJSONObject("location")
-                            .getDouble("lat");
-                    return new LatLng(lat, lng);
-                });
+//        String uri = "https://maps.google.com/maps/api/geocode/json?key=" + mapsApiKey +
+//                "&address=" + URLEncoder.encode(address, "UTF-8") + "&sensor=false";
+//        Log.d("mLog", "url:  " + uri);
+//        Request request = new Request.Builder()
+//                .url(uri)
+//                .build();
 
 
-//        HttpClient client = new DefaultHttpClient();
-//        HttpResponse response;
+
+        return Flowable.create(emitter -> {
+            List<Address> adresses = new ArrayList<>();
+            try {
+                adresses = geocoder.getFromLocationName(address, 1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            emitter.onNext(new LatLng(adresses.get(0).getLatitude(), adresses.get(0).getLongitude()));
+            emitter.onComplete();
+
+        }, BackpressureStrategy.BUFFER);
+
+//        return Flowable.just(new OkHttpClient())
+//                .flatMap(defaultHttpClient -> {
+//                    return Flowable.just(defaultHttpClient.newCall(request));
+//                })
+//                .flatMapSingle(this::sdfsdf)
+//                .filter(response -> response != null)
+//                .map(response -> {
+//                    return response.body().string();
+//                })
+//                .map(response -> {
+//                    return new JSONObject(response);
+////                })
+//                .map(jsonObject -> {
+//                    double lng = ((JSONArray) jsonObject.get("results")).getJSONObject(0)
+//                            .getJSONObject("geometry").getJSONObject("location")
+//                            .getDouble("lng");
 //
+//                    double lat = ((JSONArray) jsonObject.get("results")).getJSONObject(0)
+//                            .getJSONObject("geometry").getJSONObject("location")
+//                            .getDouble("lat");
+//                    return new LatLng(lat, lng);
+//                });
+
+
 //
-//        try {
-//            response = client.execute(httpGet);
-//            HttpEntity entity = response.getEntity();
-//            InputStream stream = entity.getContent();
-//            int b;
-//            while ((b = stream.read()) != -1) {
-//                stringBuilder.append((char) b);
-//            }
-//        } catch (ClientProtocolException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        double lat, lng;
-//
-//        JSONObject jsonObject = new JSONObject();
-//        try {
-//            jsonObject = new JSONObject(stringBuilder.toString());
-//
-//            lng = ((JSONArray)jsonObject.get("results")).getJSONObject(0)
-//                    .getJSONObject("geometry").getJSONObject("location")
-//                    .getDouble("lng");
-//
-//            lat = ((JSONArray)jsonObject.get("results")).getJSONObject(0)
-//                    .getJSONObject("geometry").getJSONObject("location")
-//                    .getDouble("lat");
-//
-//       //     Log.d("latitude", lat);
-//       //     Log.d("longitude", lng);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
 
     }
 
@@ -413,7 +396,7 @@ public class MapPresenter extends MvpPresenter<MapView> {
 //
 //                                return new LatLng(lat, lng);
 //                            })
-                            return getLocationByName(shop.getAddress(), geoCoderApiKey)
+                            return getLocationByName(shop.getAddress(), geoCoderApiKey, geocoder)
                                     .map(ll -> {
                                         shop.setLl(ll);
                                         Log.d("mLog", "setLL");
