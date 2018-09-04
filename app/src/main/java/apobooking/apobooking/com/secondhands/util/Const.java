@@ -41,4 +41,11 @@ public abstract class Const {
     class ShopsName{
         public static final String ECONOM_CLASS = "Econom class";
     }
+
+    public class Direction{
+        public static final int EAST = 1;
+        public static final int NORTH = 2;
+        public static final int WEST = 3;
+        public static final int SOUTH = 4;
+    }
 }

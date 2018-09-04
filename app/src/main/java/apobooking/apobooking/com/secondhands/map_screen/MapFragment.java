@@ -15,6 +15,9 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.arellomobile.mvp.MvpAppCompatFragment;
@@ -24,21 +27,30 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.viewpagerindicator.CirclePageIndicator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import apobooking.apobooking.com.secondhands.MainActivity;
 import apobooking.apobooking.com.secondhands.R;
+import apobooking.apobooking.com.secondhands.SecondHandApplication;
 import apobooking.apobooking.com.secondhands.entity.Shop;
 import apobooking.apobooking.com.secondhands.util.Const;
 import apobooking.apobooking.com.secondhands.util.DayDetectHelper;
 import apobooking.apobooking.com.secondhands.util.ImageFragment;
+import apobooking.apobooking.com.secondhands.util.LocationUtil;
 import apobooking.apobooking.com.secondhands.util.OnTouchOutsideViewListener;
 import apobooking.apobooking.com.secondhands.util.SlidingImageAdapter;
 import butterknife.BindView;
@@ -47,6 +59,7 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 
 import static android.support.design.widget.BottomSheetBehavior.STATE_COLLAPSED;
+import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
 
 /**
  * Created by sts on 21.06.18.
@@ -56,6 +69,9 @@ public class MapFragment extends MvpAppCompatFragment implements MapView, OnTouc
 
     @InjectPresenter
     MapPresenter mapPresenter;
+
+    @Inject
+    LocationUtil locationUtil;
 
     @BindView(R.id.bottom_sheet)
     CoordinatorLayout bottomSheet;
@@ -81,6 +97,35 @@ public class MapFragment extends MvpAppCompatFragment implements MapView, OnTouc
     @BindView(R.id.indicator)
     CirclePageIndicator circlePageIndicator;
 
+    @BindView(R.id.arrowUpImageView)
+    ImageView arrowUpImageView;
+
+    //directions
+
+    @BindView(R.id.eastLayout)
+    ViewGroup eastLayout;
+
+    @BindView(R.id.westLayout)
+    ViewGroup westLayout;
+
+    @BindView(R.id.northLayout)
+    ViewGroup northLayout;
+
+    @BindView(R.id.southLayout)
+    ViewGroup southLayout;
+
+    @BindView(R.id.eastTextView)
+    TextView eastCounter;
+
+    @BindView(R.id.westTextView)
+    TextView westCounter;
+
+    @BindView(R.id.northTextView)
+    TextView northCounter;
+
+    @BindView(R.id.southTextView)
+    TextView southCounter;
+
     private Unbinder unbinder;
     private SupportMapFragment mapFragment;
     private GoogleMap googleMapGlobal;
@@ -89,6 +134,8 @@ public class MapFragment extends MvpAppCompatFragment implements MapView, OnTouc
     private BottomSheetBehavior mBottomSheetBehavior;
     private Map<Marker, Shop> markerShopMap;
     private SlidingImageAdapter slidingImageAdapter;
+    private Animation animUp, animDown;
+
 
     public static MapFragment newInstance() {
         return new MapFragment();
@@ -113,7 +160,7 @@ public class MapFragment extends MvpAppCompatFragment implements MapView, OnTouc
 
         slidingImageAdapter = new SlidingImageAdapter(getChildFragmentManager());
         viewPager.setAdapter(slidingImageAdapter);
-    //    viewPager.setOffscreenPageLimit(-1);
+        //    viewPager.setOffscreenPageLimit(-1);
 //        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 //            @Override
 //            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -140,7 +187,7 @@ public class MapFragment extends MvpAppCompatFragment implements MapView, OnTouc
         mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
-          //      Log.d("BottomSheetBehavior", "state changed: " + newState);
+                //      Log.d("BottomSheetBehavior", "state changed: " + newState);
 //                if(newState == STATE_COLLAPSED)
 //                    mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 //                if(newState == STATE_EXPANDED)
@@ -157,6 +204,8 @@ public class MapFragment extends MvpAppCompatFragment implements MapView, OnTouc
         progressDialog.setMessage(getString(R.string.loading));
         progressDialog.setCancelable(false);
 
+
+
         ((MainActivity) getActivity()).setOnTouchOutsideViewListener(bottomSheet, this);
 
         geocoder = new Geocoder(getActivity().getApplicationContext(), Locale.getDefault());
@@ -166,6 +215,17 @@ public class MapFragment extends MvpAppCompatFragment implements MapView, OnTouc
             public void onMapReady(GoogleMap googleMap) {
                 googleMapGlobal = googleMap;
 
+                googleMapGlobal.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+                    @Override
+                    public void onCameraMove() {
+                        CameraPosition cameraPosition = googleMapGlobal.getCameraPosition();
+                        LatLngBounds currentScreen = googleMapGlobal.getProjection().getVisibleRegion().latLngBounds;
+
+                        mapPresenter.formInvisibleList(markerShopMap, currentScreen, cameraPosition.target);
+
+                       // Log.d("mLog", "Invisible markers' list size: " + invisibleMarkersList.size());
+                    }
+                });
 
                 ((MainActivity) getActivity()).mapCreated();
 
@@ -173,15 +233,15 @@ public class MapFragment extends MvpAppCompatFragment implements MapView, OnTouc
                     @Override
                     public boolean onMarkerClick(Marker marker) {
                         Log.d("mLog", "on marker clicked");
-                       // slidingImageAdapter.clear();
+                        // slidingImageAdapter.clear();
 
                         Shop shop = markerShopMap.get(marker);
                         toolbarTitle.setText(shop.getName());
                         shopAddressTextView.setText(shop.getAddress());
-                      //  slidingImageAdapter.setImageList(shop.getImagesReference());
+                        //  slidingImageAdapter.setImageList(shop.getImagesReference());
                         slidingImageAdapter.setImageList(shop.getImages());
 
-                        if(shop.getImagesReference().size() > 0)
+                        if (shop.getImagesReference().size() > 0)
                             viewPager.setCurrentItem(0);
 
                         mBottomSheetBehavior.setState(STATE_COLLAPSED);
@@ -200,6 +260,26 @@ public class MapFragment extends MvpAppCompatFragment implements MapView, OnTouc
             }
         });
         getChildFragmentManager().beginTransaction().replace(R.id.map, mapFragment).commit();
+
+        animUp = AnimationUtils.loadAnimation(getContext(), R.anim.arrow_anim_up);
+        animUp.setFillAfter(true);
+        animDown = AnimationUtils.loadAnimation(getContext(), R.anim.arrow_anim_down);
+        animDown.setFillAfter(true);
+
+        mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if (newState == STATE_COLLAPSED)
+                    arrowUpImageView.startAnimation(animUp);
+                else if (newState == STATE_EXPANDED)
+                    arrowUpImageView.startAnimation(animDown);
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+            }
+        });
     }
 
     @Override
@@ -239,6 +319,61 @@ public class MapFragment extends MvpAppCompatFragment implements MapView, OnTouc
     public void hideLoadingstate() {
         progressDialog.dismiss();
     }
+
+    @Override
+    public void displayDirections(Map<Marker, Integer> invisibleMarkers) {
+        int _northCounter = 0, _southCounter = 0, _eastCounter = 0, _westCounter = 0;
+        for(Integer direction : invisibleMarkers.values())
+        {
+            switch(direction)
+            {
+                case Const.Direction.EAST:
+                    _eastCounter++;
+                    break;
+                case Const.Direction.NORTH:
+                    _northCounter++;
+                    break;
+                case Const.Direction.WEST:
+                    _westCounter++;
+                    break;
+                case Const.Direction.SOUTH:
+                    _southCounter++;
+                    break;
+            }
+        }
+
+        if(_eastCounter != 0) {
+            eastLayout.setVisibility(View.VISIBLE);
+            eastCounter.setText(String.valueOf(_eastCounter));
+        }
+        else
+            eastLayout.setVisibility(View.INVISIBLE);
+
+        if(_northCounter != 0)
+        {
+            northLayout.setVisibility(View.VISIBLE);
+            northCounter.setText(String.valueOf(_northCounter));
+        }
+        else
+            northLayout.setVisibility(View.INVISIBLE);
+
+        if(_westCounter != 0)
+        {
+            westLayout.setVisibility(View.VISIBLE);
+            westCounter.setText(String.valueOf(_westCounter));
+        }
+        else
+            westLayout.setVisibility(View.INVISIBLE);
+
+        if(_southCounter != 0)
+        {
+            southLayout.setVisibility(View.VISIBLE);
+            southCounter.setText(String.valueOf(_southCounter));
+        }
+        else
+            southLayout.setVisibility(View.INVISIBLE);
+    }
+
 
     @Override
     public void onTouchOutside(View view, MotionEvent event) {

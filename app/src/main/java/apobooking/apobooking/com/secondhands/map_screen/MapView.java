@@ -4,6 +4,9 @@ import com.arellomobile.mvp.MvpView;
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy;
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+
+import java.util.Map;
 
 import apobooking.apobooking.com.secondhands.entity.Shop;
 
@@ -17,4 +20,5 @@ public interface MapView extends MvpView {
     void showLocation(LatLng ll);
     void showLoadingState();
     void hideLoadingstate();
+    void displayDirections( Map<Marker, Integer> invisibleMarkers);
 }

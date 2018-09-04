@@ -78,15 +78,28 @@
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/AppTheme.PopupOverlay">
 
-                <TextView
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize">
+                 <TextView
                     android:id="@+id/toolbarTitle"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:layout_marginEnd="@dimen/small_padding"
                     android:gravity="center_vertical"
                     android:textColor="@color/black"
-                    android:textSize="@dimen/button_text_size" />
+                    android:textSize="@dimen/button_text_size"
+                    android:layout_toStartOf="@+id/arrowUpImageView"/>
 
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_keyboard_arrow_up_black_24dp"
+                        android:layout_alignParentEnd="true"
+                        android:id="@+id/arrowUpImageView"
+                        android:rotation="180"
+                        android:layout_marginEnd="@dimen/small_padding"
+                        />
+                </RelativeLayout>
             </android.support.v7.widget.Toolbar>
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>

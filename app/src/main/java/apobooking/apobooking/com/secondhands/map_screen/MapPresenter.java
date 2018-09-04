@@ -7,18 +7,18 @@ import android.util.Log;
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -30,18 +30,15 @@ import apobooking.apobooking.com.secondhands.entity.ShopName;
 import apobooking.apobooking.com.secondhands.repositories.shop.ShopRepository;
 import apobooking.apobooking.com.secondhands.util.Const;
 import apobooking.apobooking.com.secondhands.util.DayDetectHelper;
+import apobooking.apobooking.com.secondhands.util.LocationUtil;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.SingleEmitter;
-import io.reactivex.SingleOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.Response;
 
 /**
@@ -58,9 +55,14 @@ public class MapPresenter extends MvpPresenter<MapView> {
     @Inject
     FirebaseStorage firebaseStorage;
 
+    @Inject
+    LocationUtil locationUtil;
+
     private StorageReference gsReference;
 
     private CompositeDisposable compositeDisposable;
+
+    private Map<Marker, Integer> invisibleMarkersList;// = new HashMap<Marker, Integer>();
 
     public MapPresenter() {
         SecondHandApplication.getAppComponent().inject(this);
@@ -69,6 +71,7 @@ public class MapPresenter extends MvpPresenter<MapView> {
 
     public void init() {
         compositeDisposable = new CompositeDisposable();
+        invisibleMarkersList = new HashMap<Marker, Integer>();
     }
 
 
@@ -423,6 +426,38 @@ public class MapPresenter extends MvpPresenter<MapView> {
                             Log.e("mLog", "displaying selected shop error");
                             throwable.printStackTrace();
                         })
+        );
+    }
+
+    public void formInvisibleList(Map<Marker, Shop> markerShopMap, LatLngBounds currentScreen,
+                                  LatLng cameraPositionTarget) {
+        compositeDisposable.add(Flowable.just(markerShopMap.keySet())
+                .flatMapIterable(markers -> markers)
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMap(marker -> {
+                    return Flowable.just(marker.getPosition())
+                            .observeOn(Schedulers.io())
+                            .map(markerPosition -> {
+                                if (currentScreen.contains(markerPosition)) {
+                                    // marker inside visible region
+                                    invisibleMarkersList.remove(marker);
+                                } else {
+                                    // marker outside visible region
+                                    int direction = locationUtil.detectDirection(cameraPositionTarget, markerPosition);
+                                    Log.d("mLog2", "direction: " + direction);
+                                    invisibleMarkersList.put(marker, direction);
+                                }
+                                return invisibleMarkersList;
+                            });
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(invisibleMarkersList -> {
+                    getViewState().displayDirections(invisibleMarkersList);
+                }, throwable -> {
+                    Log.e("mLog", "form invisible list");
+                    throwable.printStackTrace();
+                })
         );
     }
 }

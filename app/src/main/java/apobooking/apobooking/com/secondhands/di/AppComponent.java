@@ -7,6 +7,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import javax.inject.Singleton;
 
 import apobooking.apobooking.com.secondhands.database.AppDatabase;
+import apobooking.apobooking.com.secondhands.map_screen.MapFragment;
 import apobooking.apobooking.com.secondhands.map_screen.MapPresenter;
 import apobooking.apobooking.com.secondhands.repositories.shop.ShopRepository;
 import apobooking.apobooking.com.secondhands.search_properties_screen.SearchPropertiesPresenter;
