@@ -1,26 +1,16 @@
 package apobooking.apobooking.com.secondhands.search_properties_screen;
 
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -32,7 +22,6 @@ import apobooking.apobooking.com.secondhands.repositories.shop.ShopRepository;
 import apobooking.apobooking.com.secondhands.util.Const;
 import apobooking.apobooking.com.secondhands.util.DayDetectHelper;
 import io.reactivex.Flowable;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -71,8 +60,8 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
 //            updateShopList(shopList);
 //
 //            for (DataSnapshot data : dataSnapshot.child("cities").getChildren()) {
-//                String city = data.getValue().toString();
-//                citiesList.add(city);
+//                String cityId = data.getValue().toString();
+//                citiesList.add(cityId);
 //            }
 //            for (DataSnapshot data : dataSnapshot.child("shopsName").getChildren()) {
 //                String shopNmae = data.getValue().toString();
@@ -132,7 +121,7 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
 //        data.put("nameId", "7GYe0P6TrjKD6FYUHB6m");
 //        data.put("address", "");
 //        data.put("cityId", "qcFHZtVdGmmDGKpTGAbC");
-//        data.put("updateDay", 0);
+//        data.put("updateDayId", 0);
 //
 //        for (int i = 0; i < 19; i++)
 //            firebaseFirestore.collection("shops")
@@ -213,7 +202,7 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                     return Flowable.just(new Shop())
                             .map(shop -> {
                                 shop.setId(shopMap.get(Const.Firebase.SHOP_ID).toString());
-                                shop.setImageName(shopMap.get(Const.Firebase.IMAGE_PATH).toString());
+                                shop.setImagePath(shopMap.get(Const.Firebase.IMAGE_PATH).toString());
                                 shop.setNameId(shopMap.get(Const.Firebase.NAME_ID).toString());
                                 shop.setAddress(shopMap.get(Const.Firebase.ADDRESS).toString());
                                 shop.setImages((ArrayList<String>)shopMap.get(Const.Firebase.IMAGES_ARRAY));
@@ -221,9 +210,9 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
                                 return shop;
                             })
                             .map(shop -> {
-                                Log.d("mLog", "REF: " + Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                                Log.d("mLog", "REF: " + Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImagePath());
                                 gsReference = firebaseStorage
-                                        .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                                        .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImagePath());
                                 shop.setImageReference(gsReference);
 
                                 List<StorageReference> storageList = new ArrayList<>();
@@ -261,7 +250,7 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
         );
     }
 
- //   public Flowable<List<Shop>> selectShopsFlowable(String city, String shopsName, String updateDay)
+ //   public Flowable<List<Shop>> selectShopsFlowable(String cityId, String shopsName, String updateDayId)
   //  {
 //        final String[] cityIdFinal = new String[1];
 //        final String[] shopsNameIdFinal = new String[1];
@@ -270,7 +259,7 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
 //                //  .flatMapIterable(cityList -> cityList)
 //                .map(allCitiesList -> {
 //                    for (City cityMap : allCitiesList) {
-//                        if (cityMap.getName().equals(city))
+//                        if (cityMap.getName().equals(cityId))
 //                            cityIdFinal[0] = cityMap.getId();
 //                    }
 //                    return 1;
@@ -288,7 +277,7 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
 //                })
 //                .flatMap(ignored -> {
 //                    return shopRepository.getSelectedShops(cityIdFinal[0], shopsNameIdFinal[0],
-//                            String.valueOf(DayDetectHelper.detectDay(updateDay)))
+//                            String.valueOf(DayDetectHelper.detectDay(updateDayId)))
 //                            .toFlowable();
 //                })
 //                .flatMapIterable(shopMapList -> shopMapList)
@@ -302,8 +291,8 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
 //                            })
 //                            .flatMap(shop -> {
 //                                return shopRepository.getShopNameById(shop.getNameId())
-//                                        .map(shopName -> {
-//                                            shop.setName(shopName);
+//                                        .map(shopNameId -> {
+//                                            shop.setName(shopNameId);
 //                                            return shop;
 //                                        });
 //                            });
@@ -361,6 +350,44 @@ public class SearchPropertiesPresenter extends MvpPresenter<SearchPropertiesView
 
     public void clear() {
         compositeDisposable.clear();
+    }
+
+    public void getIdsOfSelectedData(String city, String shopName, String updateDay) {
+        String[] cityIdFinal = new String[1];
+        compositeDisposable.add(shopRepository.getAllCitiesEntity()
+                .toFlowable()
+                //  .flatMapIterable(cityList -> cityList)
+                .map(allCitiesList -> {
+                    for (City cityMap : allCitiesList) {
+                        if (cityMap.getName().equals(city))
+                            cityIdFinal[0] = cityMap.getId();
+                    }
+                    return 1;
+                })
+                .flatMap(ignored -> {
+                    return shopRepository.getAllShopNameEntity()
+                            .toFlowable();
+                })
+                .map(allShopsNameList -> {
+                    for (ShopName shopNameFirebase : allShopsNameList) {
+                        if (shopNameFirebase.getName().equals(shopName))
+                            return shopNameFirebase.getId();
+                    }
+                    return "";
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(shopNameId -> {
+                    String cityId = "";
+                    if(cityIdFinal[0] != null)
+                        cityId = cityIdFinal[0];
+
+                    getViewState().submitListWithProperIds(cityId, shopNameId, DayDetectHelper.detectDay(updateDay));
+                }, throwable -> {
+                    Log.e("mLog", "Detecting id's of data");
+                    throwable.printStackTrace();
+                })
+        );
     }
 }
 //Hierarchical transitions

@@ -1,51 +1,46 @@
 package apobooking.apobooking.com.secondhands.search_properties_screen;
 
 import android.app.ProgressDialog;
+import android.arch.paging.PagedList;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.NestedScrollView;
+import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 
 import com.arellomobile.mvp.MvpAppCompatFragment;
 import com.arellomobile.mvp.presenter.InjectPresenter;
 
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import apobooking.apobooking.com.secondhands.MainActivity;
 import apobooking.apobooking.com.secondhands.R;
 import apobooking.apobooking.com.secondhands.entity.Shop;
-import apobooking.apobooking.com.secondhands.ui.CustomCoordinatorLayout;
 import apobooking.apobooking.com.secondhands.ui.CustomLayoutManager;
 import apobooking.apobooking.com.secondhands.ui.CustomRelativeLayout;
-import apobooking.apobooking.com.secondhands.ui.LockableScrollView;
 import apobooking.apobooking.com.secondhands.ui.ShowSelectedShopsButton;
 import apobooking.apobooking.com.secondhands.util.Const;
+import apobooking.apobooking.com.secondhands.util.MainThreadExecutor;
+import apobooking.apobooking.com.secondhands.util.ShopKeyItemDataSource;
+import apobooking.apobooking.com.secondhands.util.ShopRequest;
 import apobooking.apobooking.com.secondhands.util.ShopsAdapter;
+import apobooking.apobooking.com.secondhands.util.ShopsAdapterNew;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import io.reactivex.Flowable;
-
-import static android.view.View.FOCUS_DOWN;
 
 public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         SearchPropertiesView, ShopsAdapter.ShopItemListener {
@@ -72,7 +67,8 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     @BindView(R.id.notTouchableLayout)
     CustomRelativeLayout notTouchableLayout;
 
-
+    private ShopsAdapterNew shopsAdapterNew;
+    private PagedList<Shop> pagedList;
     private ShopsAdapter shopsAdapter;
     private Unbinder unbinder;
     private ProgressDialog progressDialog;
@@ -81,6 +77,23 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     CustomLayoutManager mLayoutManager;
     public int positionToScroll;
     // private boolean needLoadingFooter = true;
+    private final DiffUtil.ItemCallback<Shop> itemCallback = new DiffUtil.ItemCallback<Shop>() {
+        @Override
+        public boolean areItemsTheSame(Shop oldItem, Shop newItem) {
+            return oldItem.getId().equals(newItem.getId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(Shop oldItem, Shop newItem) {
+            return oldItem.getCityId().equals(newItem.getCityId())
+                    && oldItem.getUpdateDay() == newItem.getUpdateDay()
+                    && oldItem.getNameId().equals(newItem.getNameId());
+        }
+    };
+
+    public SearchPropertiesFragment(){
+    //    SecondHandApplication.getAppComponent().inject(this);
+    }
 
     public static SearchPropertiesFragment newInstance() {
         return new SearchPropertiesFragment();
@@ -103,37 +116,37 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
 
     public void init() {
          // CustomLayoutManager mLayoutManager = new CustomLayoutManager(getContext());
-        mLayoutManager = new CustomLayoutManager(getContext());
-        selectedShopsRecyclerView.setLayoutManager(mLayoutManager);
-        shopsAdapter = new ShopsAdapter(getContext());
-        shopsAdapter.setShopItemListener(this);
-        selectedShopsRecyclerView.setAdapter(shopsAdapter);
-        selectedShopsRecyclerView.setNestedScrollingEnabled(false);
+//        mLayoutManager = new CustomLayoutManager(getContext());
+//        selectedShopsRecyclerView.setLayoutManager(mLayoutManager);
+//        shopsAdapter = new ShopsAdapter(getContext());
+//        shopsAdapter.setShopItemListener(this);
+//        selectedShopsRecyclerView.setAdapter(shopsAdapter);
+//        selectedShopsRecyclerView.setNestedScrollingEnabled(false);
 
-        nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                if (v.getChildAt(v.getChildCount() - 1) != null) {
-                    if ((scrollY >= (v.getChildAt(v.getChildCount() - 1).getMeasuredHeight() - v.getMeasuredHeight())) &&
-                            scrollY > oldScrollY) {
-
-                        int visibleItemCount = mLayoutManager.getChildCount();
-                        int totalItemCount = mLayoutManager.getItemCount();
-                        int pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
-
-                        // if (isLoadData()) {
-
-                        if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
-                            Log.d("mLog", "Condition to load data: " + String.valueOf(visibleItemCount + pastVisiblesItems)
-                                    + " >= " + String.valueOf(totalItemCount));
-                            needToResetLastResult = false;
-                            selectShops(false);
-                        }
-                        //  }
-                    }
-                }
-            }
-        });
+//        nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+//            @Override
+//            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+//                if (v.getChildAt(v.getChildCount() - 1) != null) {
+//                    if ((scrollY >= (v.getChildAt(v.getChildCount() - 1).getMeasuredHeight() - v.getMeasuredHeight())) &&
+//                            scrollY > oldScrollY) {
+//
+//                        int visibleItemCount = mLayoutManager.getChildCount();
+//                        int totalItemCount = mLayoutManager.getItemCount();
+//                        int pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
+//
+//                        // if (isLoadData()) {
+//
+//                        if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+//                            Log.d("mLog", "Condition to load data: " + String.valueOf(visibleItemCount + pastVisiblesItems)
+//                                    + " >= " + String.valueOf(totalItemCount));
+//                            needToResetLastResult = false;
+//                            selectShops(false);
+//                        }
+//                        //  }
+//                    }
+//                }
+//            }
+//        });
 
         String[] updateDayList = getResources().getStringArray(R.array.days_of_week);
         updateDayAdapter = new ArrayAdapter<String>(getContext(),
@@ -155,10 +168,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         citySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                showSelectedShopsButton.setInactive();
-                selectedShopsRecyclerView.setVisibility(View.GONE);
-                needToResetLastResult = true;
-                shopsAdapter.clear();
+                clearPreviousResult();
             }
 
             @Override
@@ -170,10 +180,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         shopNameSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                showSelectedShopsButton.setInactive();
-                selectedShopsRecyclerView.setVisibility(View.GONE);
-                needToResetLastResult = true;
-                shopsAdapter.clear();
+                clearPreviousResult();
             }
 
             @Override
@@ -185,10 +192,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         updateDaySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                showSelectedShopsButton.setInactive();
-                selectedShopsRecyclerView.setVisibility(View.GONE);
-                needToResetLastResult = true;
-                shopsAdapter.clear();
+               clearPreviousResult();
             }
 
             @Override
@@ -197,34 +201,54 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
             }
         });
 
-        shopsAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount) {
-                //mManager.smoothScrollToPosition(mMessages, null, mAdapter.getItemCount());
-                if(itemCount == 1)
-                    mLayoutManager.smoothScrollToPosition(selectedShopsRecyclerView, null, shopsAdapter.getItemCount()-1);
-            }
+//        shopsAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+//            @Override
+//            public void onItemRangeInserted(int positionStart, int itemCount) {
+//                //mManager.smoothScrollToPosition(mMessages, null, mAdapter.getItemCount());
+//                if(itemCount == 1)
+//                    mLayoutManager.smoothScrollToPosition(selectedShopsRecyclerView, null, shopsAdapter.getItemCount()-1);
+//            }
+//
+//            @Override
+//            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+//                super.onItemRangeMoved(fromPosition, toPosition, itemCount);
+//            }
+//
+//            @Override
+//            public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
+//                super.onItemRangeChanged(positionStart, itemCount, payload);
+//            }
+//
+//            @Override
+//            public void onItemRangeRemoved(int positionStart, int itemCount) {
+//                super.onItemRangeRemoved(positionStart, itemCount);
+//            }
+//
+//            @Override
+//            public void onChanged() {
+//                super.onChanged();
+//            }
+//        });
 
-            @Override
-            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-                super.onItemRangeMoved(fromPosition, toPosition, itemCount);
-            }
 
-            @Override
-            public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
-                super.onItemRangeChanged(positionStart, itemCount, payload);
-            }
 
-            @Override
-            public void onItemRangeRemoved(int positionStart, int itemCount) {
-                super.onItemRangeRemoved(positionStart, itemCount);
-            }
 
-            @Override
-            public void onChanged() {
-                super.onChanged();
-            }
-        });
+        // Adapter
+
+
+
+        // RecyclerView
+        selectedShopsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        selectedShopsRecyclerView.setNestedScrollingEnabled(false);
+    }
+
+    public void clearPreviousResult(){
+        showSelectedShopsButton.setInactive();
+        selectedShopsRecyclerView.setVisibility(View.GONE);
+        needToResetLastResult = true;
+//                shopsAdapter.clear();
+        shopsAdapterNew = null;
     }
 
     @Override
@@ -315,29 +339,60 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         nestedScrollView.scrollBy((int) showSelectedShopsButton.getX(), (int) showSelectedShopsButton.getY());
     }
 
+    @Override
+    public void submitListWithProperIds(String cityID, String shopNameId, int updateDayId) {
+        ShopRequest.cityId = cityID;
+        ShopRequest.shopNameId = shopNameId;
+        ShopRequest.updateDayId = String.valueOf(updateDayId);
+
+        // DataSource
+        ShopKeyItemDataSource dataSource = new ShopKeyItemDataSource();
+
+        // PagedList
+        PagedList.Config config = new PagedList.Config.Builder()
+                .setEnablePlaceholders(false)
+                .setPageSize(Const.RecyclerView.TOTAL_ITEM_EACH_LOAD)
+                .build();
+
+        pagedList = new PagedList.Builder<>(dataSource, config)
+                .setFetchExecutor(Executors.newSingleThreadExecutor())
+                .setNotifyExecutor(new MainThreadExecutor())
+                //  .setMainThreadExecutor(new MainThreadExecutor())
+                .build();
+
+        if(shopsAdapterNew == null) {
+            shopsAdapterNew = new ShopsAdapterNew(itemCallback);
+            shopsAdapterNew.setContext(getContext());
+
+            shopsAdapterNew.submitList(pagedList);
+            selectedShopsRecyclerView.setAdapter(shopsAdapterNew);
+        }
+    }
+
     @OnClick(R.id.allShopsLayout)
     public void ShowSelectedShopsButton() {
         showSelectedShopsButton.changeState();
 
         if (selectedShopsRecyclerView.getVisibility() == View.VISIBLE) {
             selectedShopsRecyclerView.setVisibility(View.GONE);
-            shopsAdapter.clear();
+            //shopsAdapter.clear();
+            shopsAdapterNew = null;
             needToResetLastResult = true;
         } else {
             selectedShopsRecyclerView.setVisibility(View.VISIBLE);
             //needToResetLastResult = false;
         }
-        selectShops(true);
+        selectShops();
         //paginator.initLoad();
     }
 
-    public void selectShops(boolean needToScroll) {
+    public void selectShops() {
         Log.d("mLog", "select shop");
         if (showSelectedShopsButton.getArrowDown()) {
-            if (!shopsAdapter.getLoadingFooterState()) {
-                shopsAdapter.addLoadingFooter();
-                //lockUI();
-            }
+           // if (!shopsAdapter.getLoadingFooterState()) {
+             //   shopsAdapter.addLoadingFooter();
+
+           // }
             String city, shopName, updateDay;
             if (citySpinner.getSelectedItemPosition() != 0)
                 city = citiesAdapter.getItem(citySpinner.getSelectedItemPosition());
@@ -351,9 +406,14 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
                 updateDay = updateDayAdapter.getItem(updateDaySpinner.getSelectedItemPosition());
             else
                 updateDay = "";
-            searchPropertiesPresenter.selectShops(city, shopName, updateDay, needToResetLastResult, true,
-                    needToScroll);
-            //allowToSearch = true;
+
+            searchPropertiesPresenter.getIdsOfSelectedData(city, shopName, updateDay);
+
+
+
+           // searchPropertiesPresenter.selectShops(cityId, shopNameId, updateDayId, needToResetLastResult, true,
+           //        needToScroll); //todo uncomment if need - it is working version
+
         }
     }
 

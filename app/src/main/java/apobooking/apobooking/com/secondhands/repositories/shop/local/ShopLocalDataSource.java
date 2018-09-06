@@ -1,5 +1,8 @@
 package apobooking.apobooking.com.secondhands.repositories.shop.local;
 
+import android.arch.paging.ItemKeyedDataSource;
+import android.support.annotation.NonNull;
+
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +17,6 @@ import apobooking.apobooking.com.secondhands.repositories.shop.ShopDataSource;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
-import io.reactivex.schedulers.Schedulers;
 
 /**
  * Created by procreationsmac on 09/07/2018.
@@ -46,6 +48,12 @@ public class ShopLocalDataSource implements ShopDataSource {
     public Maybe<List<Map<String, Object>>> getSelectedShops(String city, String shopsName, String updateDay,
                                                              boolean needToResetLastResult, boolean needLimit) {
         return null;
+    }
+
+    @Override
+    public void getSelectedShops(String city, String shopsName, String updateDay, @NonNull ItemKeyedDataSource.LoadCallback<Shop> callback,
+                                 String key) {
+        //return null;
     }
 
 

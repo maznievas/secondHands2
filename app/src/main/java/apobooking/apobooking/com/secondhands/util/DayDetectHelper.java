@@ -28,7 +28,7 @@ public class DayDetectHelper {
             case 6:
                 return R.string.sunday;
             default:
-                return R.string.sunday;
+                return R.string.not_established;
         }
     }
 

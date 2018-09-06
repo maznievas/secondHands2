@@ -10,8 +10,10 @@ import apobooking.apobooking.com.secondhands.database.AppDatabase;
 import apobooking.apobooking.com.secondhands.map_screen.MapFragment;
 import apobooking.apobooking.com.secondhands.map_screen.MapPresenter;
 import apobooking.apobooking.com.secondhands.repositories.shop.ShopRepository;
+import apobooking.apobooking.com.secondhands.search_properties_screen.SearchPropertiesFragment;
 import apobooking.apobooking.com.secondhands.search_properties_screen.SearchPropertiesPresenter;
 import apobooking.apobooking.com.secondhands.util.ImageFragment;
+import apobooking.apobooking.com.secondhands.util.ShopKeyItemDataSource;
 import dagger.Component;
 
 @Singleton
@@ -31,4 +33,6 @@ public interface AppComponent {
     void inject(SearchPropertiesPresenter searchPropertiesPresenter);
     void inject(MapPresenter mapPresenter);
     void inject(ImageFragment imageFragment);
+    void inject(ShopKeyItemDataSource shopKeyItemDataSource);
+    //void inject(SearchPropertiesFragment searchPropertiesFragment);
 }

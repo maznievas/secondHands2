@@ -1,4 +1,14 @@
 <resources>
+    <string-array name="days_of_week">
+        <item>@string/all_days</item>
+        <item>@string/monday</item>
+        <item>@string/tuesday</item>
+        <item>@string/wednesday</item>
+        <item>@string/thursday</item>
+        <item>@string/friday</item>
+        <item>@string/saturday</item>
+        <item>@string/sunday</item>
+    </string-array>
     <string name="app_name">SecondHands</string>
     <string name="maps_key">AIzaSyA_gy7pumkGpTkqccYpX4fXy6KzSR4VxsE</string>
     <string name="select_city">Select name</string>
@@ -21,14 +31,5 @@
     <string name="all_cities">All cities</string>
     <string name="address">Address:</string>
     <string name="geocoding_api_key">AIzaSyBX1FPmOCZnIze1G9II_L8tkxUIV3CvoDQ</string>
-    <string-array name="days_of_week">
-        <item>@string/all_days</item>
-        <item>@string/monday</item>
-        <item>@string/tuesday</item>
-        <item>@string/wednesday</item>
-        <item>@string/thursday</item>
-        <item>@string/friday</item>
-        <item>@string/saturday</item>
-        <item>@string/sunday</item>
-    </string-array>
+    <string name="not_established">Update day not established</string>
 </resources>

@@ -28,7 +28,7 @@ public class Shop {
     LatLng ll;
     @Ignore
     StorageReference imageReference;
-    String imageName;
+    String imagePath;
     @Ignore
     ArrayList<String> images;
     @Ignore
@@ -98,12 +98,12 @@ public class Shop {
         this.imageReference = imageReference;
     }
 
-    public String getImageName() {
-        return imageName;
+    public String getImagePath() {
+        return imagePath;
     }
 
-    public void setImageName(String imageName) {
-        this.imageName = imageName;
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
     public ArrayList<String> getImages() {

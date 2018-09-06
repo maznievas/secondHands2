@@ -85,7 +85,7 @@ public class MapPresenter extends MvpPresenter<MapView> {
 //                        .toFlowable()
 //                        .map(allCitiesList -> {
 //                            for (City cityMap : allCitiesList) {
-//                                if (cityMap.getName().equals(city))
+//                                if (cityMap.getName().equals(cityId))
 //                                    cityIdFinal[0] = cityMap.getId();
 //                            }
 //                            return 1;
@@ -103,7 +103,7 @@ public class MapPresenter extends MvpPresenter<MapView> {
 //                        })
 //                        .flatMap(ignored -> {
 //                            return shopRepository.getSelectedShops(cityIdFinal[0], shopsNameIdFinal[0],
-//                                    String.valueOf(DayDetectHelper.detectDay(updateDay)), true, needLimit)
+//                                    String.valueOf(DayDetectHelper.detectDay(updateDayId)), true, needLimit)
 //                                    .toFlowable();
 //                        })
 //                        .flatMapIterable(shopList -> shopList)
@@ -147,8 +147,8 @@ public class MapPresenter extends MvpPresenter<MapView> {
 //                                    .flatMap(shop -> {
 //                                        return shopRepository.getShopNameById(shop.getNameId())
 //                                                .subscribeOn(Schedulers.io())
-//                                                .map(shopName -> {
-//                                                    shop.setName(shopName);
+//                                                .map(shopNameId -> {
+//                                                    shop.setName(shopNameId);
 //                                                    return shop;
 //                                                });
 //                                    });
@@ -267,9 +267,9 @@ public class MapPresenter extends MvpPresenter<MapView> {
                                                     return shop;
                                                 })
                                                 .map(shop1 -> {
-                                                    Log.d("mLog", "REF: " + Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                                                    Log.d("mLog", "REF: " + Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImagePath());
                                                     gsReference = firebaseStorage
-                                                            .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                                                            .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImagePath());
                                                     shop.setImageReference(gsReference);
 
                                                     List<StorageReference> storageList = new ArrayList<>();
@@ -374,9 +374,9 @@ public class MapPresenter extends MvpPresenter<MapView> {
     public void displaySelectedShop(String shopId, Geocoder geocoder, String geoCoderApiKey) {
         compositeDisposable.add(shopRepository.getShopById(shopId)
                         .map(shop -> {
-                            Log.d("mLog", "REF: " + Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                            Log.d("mLog", "REF: " + Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImagePath());
                             gsReference = firebaseStorage
-                                    .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImageName());
+                                    .getReferenceFromUrl(Const.Firebase.BASE_IMAGE_REFERENCE + shop.getImagePath());
                             shop.setImageReference(gsReference);
 
                             List<StorageReference> storageList = new ArrayList<>();

@@ -5,6 +5,7 @@ import com.arellomobile.mvp.viewstate.strategy.AddToEndStrategy;
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy;
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType;
 
+import java.io.Serializable;
 import java.util.List;
 
 import apobooking.apobooking.com.secondhands.entity.City;
@@ -33,4 +34,6 @@ public interface SearchPropertiesView extends MvpView{
     void unlockUI();
 
     void scrollToFindButton();
+
+    void submitListWithProperIds(String cityID, String shopNameId, int updateDayId);
 }

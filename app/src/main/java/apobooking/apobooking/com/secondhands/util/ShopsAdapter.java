@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 
 import java.util.ArrayList;
@@ -86,17 +87,18 @@ public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                     }
                 });
 
-                int placeholder = R.color.recytclerViewItemColor;
+                int errorImage = R.color.recytclerViewItemColor;
                 switch(shop.getName()){
                     case Const.ShopsName.ECONOM_CLASS:
-                        placeholder = R.drawable.econom_logo;
+                        errorImage = R.drawable.econom_logo;
                         break;
                 }
 
                 Glide.with(context)
                         .using(new FirebaseImageLoader())
                         .load(shop.getImageReference())
-                        .error(placeholder)
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .placeholder(errorImage)
                         .into(holder.shopImage);
 
                 if(position == shopList.size() - 1)

@@ -1,10 +1,7 @@
 package apobooking.apobooking.com.secondhands.repositories.shop;
 
-import android.util.Log;
-
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
+import android.arch.paging.ItemKeyedDataSource;
+import android.support.annotation.NonNull;
 
 import java.util.List;
 import java.util.Map;
@@ -16,12 +13,9 @@ import apobooking.apobooking.com.secondhands.entity.Shop;
 import apobooking.apobooking.com.secondhands.entity.ShopName;
 import apobooking.apobooking.com.secondhands.repositories.Local;
 import apobooking.apobooking.com.secondhands.repositories.Remote;
-import apobooking.apobooking.com.secondhands.util.Const;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
-import io.reactivex.MaybeEmitter;
-import io.reactivex.MaybeOnSubscribe;
 
 /**
  * Created by procreationsmac on 09/07/2018.
@@ -63,6 +57,13 @@ public class ShopRepository implements ShopDataSource {
     public Maybe<List<Map<String, Object>>> getSelectedShops(String city, String shopsName, String updateDay,
                                                              boolean needToResetLastResult, boolean needLimit) {
         return shopRemoteDataSource.getSelectedShops(city, shopsName, updateDay, needToResetLastResult, needLimit);
+    }
+
+    @Override
+    public void getSelectedShops(String city, String shopsName, String updateDay,
+                                 @NonNull final ItemKeyedDataSource.LoadCallback<Shop> callback,
+                                 String key) {
+        shopRemoteDataSource.getSelectedShops(city, shopsName, updateDay, callback, key);
     }
 
 

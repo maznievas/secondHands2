@@ -87,6 +87,9 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
     implementation 'org.apache.httpcomponents:httpcore:4.4.1'
     //implementation 'org.apache.httpcomponents:httpclient:4.5.6'
+    //paging library
+    implementation 'android.arch.paging:runtime:1.0.1'
+    implementation 'android.arch.paging:rxjava2:1.0.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

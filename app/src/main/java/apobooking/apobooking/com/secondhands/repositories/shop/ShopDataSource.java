@@ -1,6 +1,7 @@
 package apobooking.apobooking.com.secondhands.repositories.shop;
 
-import com.google.firebase.database.DataSnapshot;
+import android.arch.paging.ItemKeyedDataSource;
+import android.support.annotation.NonNull;
 
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,8 @@ public interface ShopDataSource {
     Maybe<List<Map<String, Object>>> getAllShops();
     Maybe<List<Map<String,Object>>> getSelectedShops(String city, String shopsName, String updateDay, boolean needToresetLastResult,
                                                      boolean needLimit);
+    void getSelectedShops(String city, String shopsName, String updateDay, @NonNull final ItemKeyedDataSource.LoadCallback<Shop> callback,
+                          String key);
     Maybe<List<Map<String,Object>>> getAllCities();
     Maybe<List<Map<String,Object>>> getAllShopsNAme();
     Maybe<List<City>> getAllCitiesEntity();

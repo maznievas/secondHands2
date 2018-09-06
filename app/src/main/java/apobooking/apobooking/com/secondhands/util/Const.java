@@ -27,11 +27,11 @@ public abstract class Const {
     }
 
     public class RecyclerView{
-        public static final int TOTAL_ITEM_EACH_LOAD = 10;
+        public static final int TOTAL_ITEM_EACH_LOAD = 8;
     }
 
     public class Bundle{
-        public static final String SHOP_NAME = "shopName";
+        public static final String SHOP_NAME = "shopNameId";
         public static final String SHOP_CITY = "shopCity";
         public static final String SHOP_UPDATE_DAY = "shopUpdateDay";
         public static final String SHOP_ID = "shopId";
