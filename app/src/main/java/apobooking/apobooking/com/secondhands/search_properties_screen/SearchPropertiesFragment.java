@@ -32,6 +32,7 @@ import apobooking.apobooking.com.secondhands.ui.CustomLayoutManager;
 import apobooking.apobooking.com.secondhands.ui.CustomRelativeLayout;
 import apobooking.apobooking.com.secondhands.ui.ShowSelectedShopsButton;
 import apobooking.apobooking.com.secondhands.util.Const;
+import apobooking.apobooking.com.secondhands.util.LoadingStateInterface;
 import apobooking.apobooking.com.secondhands.util.MainThreadExecutor;
 import apobooking.apobooking.com.secondhands.util.ShopKeyItemDataSource;
 import apobooking.apobooking.com.secondhands.util.ShopRequest;
@@ -43,7 +44,7 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 
 public class SearchPropertiesFragment extends MvpAppCompatFragment implements
-        SearchPropertiesView, ShopsAdapter.ShopItemListener {
+        SearchPropertiesView, ShopsAdapter.ShopItemListener, LoadingStateInterface {
 
     public static boolean allowToSearch = true;
     @InjectPresenter
@@ -326,7 +327,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         Log.d("mLog1", "LOCK");
        // getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
        //         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-         }
+    }
 
     @Override
     public void unlockUI() {
@@ -347,6 +348,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
 
         // DataSource
         ShopKeyItemDataSource dataSource = new ShopKeyItemDataSource();
+        dataSource.setLoadingStateListener(this);
 
         // PagedList
         PagedList.Config config = new PagedList.Config.Builder()
@@ -361,6 +363,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
                 .build();
 
         if(shopsAdapterNew == null) {
+          //  showProgressBar();
             shopsAdapterNew = new ShopsAdapterNew(itemCallback);
             shopsAdapterNew.setContext(getContext());
 
@@ -465,5 +468,17 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     public void scrollTo(int position) {
         positionToScroll = position;
         //    mLayoutManager.scrollToPositionWithOffset(position, 200);
+    }
+
+    @Override
+    public void showLoadingView() {
+        Log.d("mLog", "Show loading view");
+        showProgressBar();
+    }
+
+    @Override
+    public void hideLoadingView() {
+        Log.d("mLog", "Hide loading view");
+        hideProgressBar();
     }
 }
