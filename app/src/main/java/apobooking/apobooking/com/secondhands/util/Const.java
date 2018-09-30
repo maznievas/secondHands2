@@ -28,6 +28,7 @@ public abstract class Const {
 
     public class RecyclerView{
         public static final int TOTAL_ITEM_EACH_LOAD = 8;
+        public static final int INITIAL_DISTANCE_LOAD = 16;
     }
 
     public class Bundle{

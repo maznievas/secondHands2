@@ -116,38 +116,38 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     }
 
     public void init() {
-         // CustomLayoutManager mLayoutManager = new CustomLayoutManager(getContext());
-//        mLayoutManager = new CustomLayoutManager(getContext());
-//        selectedShopsRecyclerView.setLayoutManager(mLayoutManager);
-//        shopsAdapter = new ShopsAdapter(getContext());
-//        shopsAdapter.setShopItemListener(this);
-//        selectedShopsRecyclerView.setAdapter(shopsAdapter);
-//        selectedShopsRecyclerView.setNestedScrollingEnabled(false);
+        mLayoutManager = new CustomLayoutManager(getContext());
+        selectedShopsRecyclerView.setLayoutManager(mLayoutManager);
+        shopsAdapter = new ShopsAdapter(getContext());
+        shopsAdapter.setShopItemListener(this);
+        selectedShopsRecyclerView.setAdapter(shopsAdapter);
+        selectedShopsRecyclerView.setNestedScrollingEnabled(false);
 
-//        nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
-//            @Override
-//            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-//                if (v.getChildAt(v.getChildCount() - 1) != null) {
-//                    if ((scrollY >= (v.getChildAt(v.getChildCount() - 1).getMeasuredHeight() - v.getMeasuredHeight())) &&
-//                            scrollY > oldScrollY) {
-//
-//                        int visibleItemCount = mLayoutManager.getChildCount();
-//                        int totalItemCount = mLayoutManager.getItemCount();
-//                        int pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
-//
-//                        // if (isLoadData()) {
-//
-//                        if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
-//                            Log.d("mLog", "Condition to load data: " + String.valueOf(visibleItemCount + pastVisiblesItems)
-//                                    + " >= " + String.valueOf(totalItemCount));
-//                            needToResetLastResult = false;
-//                            selectShops(false);
-//                        }
-//                        //  }
-//                    }
-//                }
-//            }
-//        });
+
+        nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                if (v.getChildAt(v.getChildCount() - 1) != null) {
+                    if ((scrollY >= (v.getChildAt(v.getChildCount() - 1).getMeasuredHeight() - v.getMeasuredHeight())) &&
+                            scrollY > oldScrollY) {
+
+                        int visibleItemCount = mLayoutManager.getChildCount();
+                        int totalItemCount = mLayoutManager.getItemCount();
+                        int pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
+
+                        // if (isLoadData()) {
+
+                        if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                            Log.d("mLog", "Condition to load data: " + String.valueOf(visibleItemCount + pastVisiblesItems)
+                                    + " >= " + String.valueOf(totalItemCount));
+                            needToResetLastResult = false;
+                            selectShops();
+                        }
+                        //  }
+                    }
+                }
+            }
+        });
 
         String[] updateDayList = getResources().getStringArray(R.array.days_of_week);
         updateDayAdapter = new ArrayAdapter<String>(getContext(),
@@ -248,7 +248,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         showSelectedShopsButton.setInactive();
         selectedShopsRecyclerView.setVisibility(View.GONE);
         needToResetLastResult = true;
-//                shopsAdapter.clear();
+        shopsAdapter.clear();
         shopsAdapterNew = null;
     }
 
@@ -354,12 +354,12 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         PagedList.Config config = new PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
                 .setPageSize(Const.RecyclerView.TOTAL_ITEM_EACH_LOAD)
+                .setInitialLoadSizeHint(Const.RecyclerView.INITIAL_DISTANCE_LOAD)
                 .build();
 
         pagedList = new PagedList.Builder<>(dataSource, config)
                 .setFetchExecutor(Executors.newSingleThreadExecutor())
                 .setNotifyExecutor(new MainThreadExecutor())
-                //  .setMainThreadExecutor(new MainThreadExecutor())
                 .build();
 
         if(shopsAdapterNew == null) {
@@ -378,12 +378,12 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
 
         if (selectedShopsRecyclerView.getVisibility() == View.VISIBLE) {
             selectedShopsRecyclerView.setVisibility(View.GONE);
-            //shopsAdapter.clear();
+            shopsAdapter.clear();
             shopsAdapterNew = null;
-            needToResetLastResult = true;
+            needToResetLastResult = false;
         } else {
             selectedShopsRecyclerView.setVisibility(View.VISIBLE);
-            //needToResetLastResult = false;
+            needToResetLastResult = true;
         }
         selectShops();
         //paginator.initLoad();
@@ -410,12 +410,12 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
             else
                 updateDay = "";
 
-            searchPropertiesPresenter.getIdsOfSelectedData(city, shopName, updateDay);
+            //searchPropertiesPresenter.getIdsOfSelectedData(city, shopName, updateDay);
 
 
 
-           // searchPropertiesPresenter.selectShops(cityId, shopNameId, updateDayId, needToResetLastResult, true,
-           //        needToScroll); //todo uncomment if need - it is working version
+            searchPropertiesPresenter.selectShops(city, shopName, updateDay, needToResetLastResult, true,
+                   /*needToScroll*/ false); //todo uncomment if need - it is working version
 
         }
     }

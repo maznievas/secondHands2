@@ -42,16 +42,14 @@ public class ShopKeyItemDataSource extends ItemKeyedDataSource<String, Shop> {
                          ShopRequest.shopNameId, ShopRequest.updateDayId, callback, ""));
                 })
                 .toFlowable()
-                .delay(600, TimeUnit.MILLISECONDS)
+                //.delay(1200, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .doAfterTerminate(() ->  loadingStateListener.hideLoadingView())
                 .subscribe(__ -> {
-
+                    Log.d("mLog", "TEST1 subscribe");
                 }, throwable -> {
                     Log.e("mLog", "initial loading");
                 });
-
-
     }
 
     @Override
@@ -65,7 +63,6 @@ public class ShopKeyItemDataSource extends ItemKeyedDataSource<String, Shop> {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe();
-
     }
 
     @Override
