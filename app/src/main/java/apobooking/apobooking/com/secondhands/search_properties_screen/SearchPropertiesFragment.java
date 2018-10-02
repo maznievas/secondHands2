@@ -2,50 +2,44 @@ package apobooking.apobooking.com.secondhands.search_properties_screen;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.NestedScrollView;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.LinearSmoothScroller;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ProgressBar;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 
 import com.arellomobile.mvp.MvpAppCompatFragment;
 import com.arellomobile.mvp.presenter.InjectPresenter;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 import apobooking.apobooking.com.secondhands.MainActivity;
 import apobooking.apobooking.com.secondhands.R;
 import apobooking.apobooking.com.secondhands.entity.Shop;
-import apobooking.apobooking.com.secondhands.ui.CustomCoordinatorLayout;
 import apobooking.apobooking.com.secondhands.ui.CustomLayoutManager;
-import apobooking.apobooking.com.secondhands.ui.CustomRelativeLayout;
-import apobooking.apobooking.com.secondhands.ui.LockableScrollView;
 import apobooking.apobooking.com.secondhands.ui.ShowSelectedShopsButton;
 import apobooking.apobooking.com.secondhands.util.Const;
-import apobooking.apobooking.com.secondhands.util.ShopsAdapter;
+import apobooking.apobooking.com.secondhands.util.MyScrollView;
+import apobooking.apobooking.com.secondhands.util.adapters.ShopsAdapter;
+import apobooking.apobooking.com.secondhands.util.behaviors.DisableableAppBarLayoutBehavior;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import io.reactivex.Flowable;
 
-import static android.view.View.FOCUS_DOWN;
+import static android.support.design.widget.AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS;
 
 public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         SearchPropertiesView, ShopsAdapter.ShopItemListener {
@@ -64,13 +58,21 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     @BindView(R.id.shopNameSpinner)
     Spinner shopNameSpinner;
     @BindView(R.id.nestedScrollView)
-    NestedScrollView nestedScrollView;
-    @BindView(R.id.progressBarRecyclerView)
-    ProgressBar progressBarRV;
-    @BindView(R.id.parentLayout)
-    ViewGroup parentLayout;
-    @BindView(R.id.notTouchableLayout)
-    CustomRelativeLayout notTouchableLayout;
+    MyScrollView nestedScrollView;
+    @BindView(R.id.coordinatorLayout)
+    CoordinatorLayout coordinatorLayout;
+    @BindView(R.id.main_appbar)
+    AppBarLayout appBarLayout;
+    // @BindView(R.id.main_toolbar)
+    // Toolbar toolbar;
+    @BindView(R.id.main_collapsing)
+    CollapsingToolbarLayout collapsingToolbarLayout;
+    // @BindView(R.id.progressBarRecyclerView)
+    // ProgressBar progressBarRV; // todo uncomment
+    // @BindView(R.id.parentLayout)
+    // ViewGroup parentLayout;
+    //  @BindView(R.id.notTouchableLayout)
+    //  CustomRelativeLayout notTouchableLayout;
 
 
     private ShopsAdapter shopsAdapter;
@@ -80,6 +82,10 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     boolean needToResetLastResult = false;
     CustomLayoutManager mLayoutManager;
     public int positionToScroll;
+    CoordinatorLayout.LayoutParams appBarLayoutParams;
+    AppBarLayout.LayoutParams toolbarLayoutParams;
+    DisableableAppBarLayoutBehavior appBarLayoutBehavior;
+
     // private boolean needLoadingFooter = true;
 
     public static SearchPropertiesFragment newInstance() {
@@ -95,14 +101,13 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_search_properties, container, false);
+        View view = inflater.inflate(R.layout.fragment_search_properties_coordinator_layout, container, false);
         unbinder = ButterKnife.bind(this, view);
         init();
         return view;
     }
 
     public void init() {
-         // CustomLayoutManager mLayoutManager = new CustomLayoutManager(getContext());
         mLayoutManager = new CustomLayoutManager(getContext());
         selectedShopsRecyclerView.setLayoutManager(mLayoutManager);
         shopsAdapter = new ShopsAdapter(getContext());
@@ -110,30 +115,33 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         selectedShopsRecyclerView.setAdapter(shopsAdapter);
         selectedShopsRecyclerView.setNestedScrollingEnabled(false);
 
-        nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                if (v.getChildAt(v.getChildCount() - 1) != null) {
-                    if ((scrollY >= (v.getChildAt(v.getChildCount() - 1).getMeasuredHeight() - v.getMeasuredHeight())) &&
-                            scrollY > oldScrollY) {
+        nestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (v.getChildAt(v.getChildCount() - 1) != null) {
+                if ((scrollY >= (v.getChildAt(v.getChildCount() - 1).getMeasuredHeight() - v.getMeasuredHeight())) &&
+                        scrollY > oldScrollY) {
 
-                        int visibleItemCount = mLayoutManager.getChildCount();
-                        int totalItemCount = mLayoutManager.getItemCount();
-                        int pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
+                    int visibleItemCount = mLayoutManager.getChildCount();
+                    int totalItemCount = mLayoutManager.getItemCount();
+                    int pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
 
-                        // if (isLoadData()) {
+                    // if (isLoadData()) {
 
-                        if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
-                            Log.d("mLog", "Condition to load data: " + String.valueOf(visibleItemCount + pastVisiblesItems)
-                                    + " >= " + String.valueOf(totalItemCount));
-                            needToResetLastResult = false;
-                            selectShops(false);
-                        }
-                        //  }
+                    if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                        Log.d("mLog", "Condition to load data: " + String.valueOf(visibleItemCount + pastVisiblesItems)
+                                + " >= " + String.valueOf(totalItemCount));
+                        needToResetLastResult = false;
+                        selectShops(false);
                     }
+                    //  }
                 }
             }
         });
+
+        //tries with toolbar to disable collapse
+        toolbarLayoutParams = (AppBarLayout.LayoutParams) collapsingToolbarLayout.getLayoutParams();
+        setAppBarDragEnabled(false);
+
+       // searchPropertiesPresenter.loadSpinnerData();
 
         String[] updateDayList = getResources().getStringArray(R.array.days_of_week);
         updateDayAdapter = new ArrayAdapter<String>(getContext(),
@@ -159,6 +167,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
                 selectedShopsRecyclerView.setVisibility(View.GONE);
                 needToResetLastResult = true;
                 shopsAdapter.clear();
+                setAppBarDragEnabled(false);
             }
 
             @Override
@@ -174,6 +183,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
                 selectedShopsRecyclerView.setVisibility(View.GONE);
                 needToResetLastResult = true;
                 shopsAdapter.clear();
+                setAppBarDragEnabled(false);
             }
 
             @Override
@@ -189,6 +199,7 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
                 selectedShopsRecyclerView.setVisibility(View.GONE);
                 needToResetLastResult = true;
                 shopsAdapter.clear();
+                setAppBarDragEnabled(false);
             }
 
             @Override
@@ -201,8 +212,8 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 //mManager.smoothScrollToPosition(mMessages, null, mAdapter.getItemCount());
-                if(itemCount == 1)
-                    mLayoutManager.smoothScrollToPosition(selectedShopsRecyclerView, null, shopsAdapter.getItemCount()-1);
+                if (itemCount == 1)
+                    mLayoutManager.smoothScrollToPosition(selectedShopsRecyclerView, null, shopsAdapter.getItemCount() - 1);
             }
 
             @Override
@@ -234,9 +245,16 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         searchPropertiesPresenter.clear();
     }
 
-    @OnClick(R.id.applyButton)
-    public void onApplyClicked() {
-        //   ((MainActivity) getActivity()).openMap();
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+      //  outState.putString(Const.SavedInstanceState.CITY_NAME, citiesAdapter.getItem(citySpinner.getSelectedItemPosition()));
+      //  outState.putString(Const.SavedInstanceState.SHOP_NAME, shopsNameAdapter.getItem(shopNameSpinner.getSelectedItemPosition()));
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
     }
 
     @Override
@@ -249,12 +267,14 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
         if (shopsAdapter.getLoadingFooterState()) {
             shopsAdapter.removeLoadingFooter();
         }
-        shopsAdapter.addSelectedShops(shopList);
+        if (shopList.size() > 0)
+            shopsAdapter.addSelectedShops(shopList);
         allowToSearch = true;
     }
 
     @Override
     public void setCitiesList(List<String> citiesList) {
+        if(!citiesList.get(0).equals(getContext().getString(R.string.all_cities)))
         citiesList.add(0, getContext().getString(R.string.all_cities));
         citiesAdapter = new ArrayAdapter<String>(getContext(),
                 android.R.layout.simple_dropdown_item_1line, citiesList);
@@ -266,7 +286,8 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
 
     @Override
     public void setShopsNAmeLIst(List<String> shopsNameList) {
-        shopsNameList.add(0, getContext().getString(R.string.all_shops));
+        if(!shopsNameList.get(0).equals(getContext().getString(R.string.all_shops)))
+            shopsNameList.add(0, getContext().getString(R.string.all_shops));
         shopsNameAdapter = new ArrayAdapter<String>(getContext(),
                 android.R.layout.simple_dropdown_item_1line, shopsNameList);
         shopsNameAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
@@ -289,30 +310,35 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
 
     @Override
     public void showProgressBar() {
-        progressBarRV.setVisibility(View.VISIBLE);
+        //progressBarRV.setVisibility(View.VISIBLE); //todo uncomment
     }
 
     @Override
     public void hideProgressBar() {
-        progressBarRV.setVisibility(View.INVISIBLE);
+        //progressBarRV.setVisibility(View.INVISIBLE);//todo uncommet
     }
 
     @Override
     public void lockUI() {
         Log.d("mLog1", "LOCK");
-       // getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-       //         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-         }
+        //selectedShopsRecyclerView.setNestedScrollingEnabled(true);
+        // nestedScrollView.setScrolling(false);
+        // getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+        //         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    }
 
     @Override
     public void unlockUI() {
         Log.d("mLog1", "UNLOCK");
-       // getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-       }
+
+        //selectedShopsRecyclerView.setNestedScrollingEnabled(false);
+        //nestedScrollView.setScrolling(true);
+        // getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    }
 
     @Override
     public void scrollToFindButton() {
-        nestedScrollView.scrollBy((int) showSelectedShopsButton.getX(), (int) showSelectedShopsButton.getY());
+        //nestedScrollView.scrollBy((int) showSelectedShopsButton.getX(), (int) showSelectedShopsButton.getY());
     }
 
     @OnClick(R.id.allShopsLayout)
@@ -323,8 +349,11 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
             selectedShopsRecyclerView.setVisibility(View.GONE);
             shopsAdapter.clear();
             needToResetLastResult = true;
+            setAppBarDragEnabled(false);
         } else {
             selectedShopsRecyclerView.setVisibility(View.VISIBLE);
+            appBarLayout.setExpanded(false);
+            setAppBarDragEnabled(true);
             //needToResetLastResult = false;
         }
         selectShops(true);
@@ -360,24 +389,24 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     @OnClick(R.id.showOnMapButton)
     public void onShowOnMapButtonClicked() {
         String city, shopName, updateDay;
-        if (citySpinner.getSelectedItemPosition() != 0)
+        if (citySpinner.getSelectedItemPosition() > 0)
             city = citiesAdapter.getItem(citySpinner.getSelectedItemPosition());
         else
             city = "";
-        if (shopNameSpinner.getSelectedItemPosition() != 0)
+        if (shopNameSpinner.getSelectedItemPosition() > 0)
             shopName = shopsNameAdapter.getItem(shopNameSpinner.getSelectedItemPosition());
         else
             shopName = "";
-        if (updateDaySpinner.getSelectedItemPosition() != 0)
+        if (updateDaySpinner.getSelectedItemPosition() > 0)
             updateDay = updateDayAdapter.getItem(updateDaySpinner.getSelectedItemPosition());
         else
             updateDay = "";
-        ((MainActivity) getActivity()).openMap(city, shopName, updateDay);
+        ((MainActivity) getActivity()).openMap(city, shopName, updateDay);//todo rewrtite with fragmentmanager
     }
 
     @Override
     public void shopSelected(String shopId) {
-        ((MainActivity) getActivity()).openMapSelectedShop(shopId);
+        ((MainActivity) getActivity()).openMapSelectedShop(shopId);//todo rewrite with fragmentManager
     }
 
     @Override
@@ -391,9 +420,9 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
 //                .smoothScrollToPosition(selectedShopsRecyclerView, new RecyclerView.State(),
 //                        shopsAdapter.getItemCount() - 1);
 
-       // mLayoutManager.scrollToPositionWithOffset(shopsAdapter.getItemCount(), 200);
+        // mLayoutManager.scrollToPositionWithOffset(shopsAdapter.getItemCount(), 200);
 
-       // selectedShopsRecyclerView.smoothScrollToPosition(shopsAdapter.getItemCount() - 2);
+        // selectedShopsRecyclerView.smoothScrollToPosition(shopsAdapter.getItemCount() - 2);
 
 //        ViewGroup.MarginLayoutParams marginLayoutParams =
 //                (ViewGroup.MarginLayoutParams) selectedShopsRecyclerView.getLayoutParams();
@@ -405,5 +434,13 @@ public class SearchPropertiesFragment extends MvpAppCompatFragment implements
     public void scrollTo(int position) {
         positionToScroll = position;
         //    mLayoutManager.scrollToPositionWithOffset(position, 200);
+    }
+
+    public void setAppBarDragEnabled(boolean flag) {
+        if (!flag)
+            toolbarLayoutParams.setScrollFlags(0);
+        else
+            toolbarLayoutParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
+        collapsingToolbarLayout.setLayoutParams(toolbarLayoutParams);
     }
 }

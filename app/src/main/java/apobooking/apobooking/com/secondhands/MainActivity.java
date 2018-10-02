@@ -1,7 +1,5 @@
 package apobooking.apobooking.com.secondhands;
 
-import android.app.ActivityManager;
-import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -11,13 +9,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 
 import apobooking.apobooking.com.secondhands.map_screen.MapFragment;
 import apobooking.apobooking.com.secondhands.search_properties_screen.SearchPropertiesFragment;
 import apobooking.apobooking.com.secondhands.util.Const;
-import apobooking.apobooking.com.secondhands.util.OnTouchOutsideViewListener;
-
-import static android.content.Context.*;
+import apobooking.apobooking.com.secondhands.util.listeners.OnTouchOutsideViewListener;
 
 public class MainActivity extends AppCompatActivity {
 

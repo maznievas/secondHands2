@@ -43,6 +43,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
         android:text="Address"
+        android:textAllCaps="true"
         app:layout_constraintBottom_toTopOf="@+id/updateDayTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/shopNameTextView"
@@ -60,4 +61,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/adressTextView"
         app:layout_constraintTop_toBottomOf="@+id/adressTextView" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/shopImage"
+        app:layout_constraintEnd_toEndOf="@+id/shopImage"
+        app:layout_constraintStart_toStartOf="@+id/shopImage"
+        app:layout_constraintTop_toTopOf="@+id/shopImage" />
 </android.support.constraint.ConstraintLayout>

@@ -1,7 +1,10 @@
 package apobooking.apobooking.com.secondhands.search_properties_screen;
 
 import com.arellomobile.mvp.MvpView;
+import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy;
 import com.arellomobile.mvp.viewstate.strategy.AddToEndStrategy;
+import com.arellomobile.mvp.viewstate.strategy.OneExecutionStateStrategy;
+import com.arellomobile.mvp.viewstate.strategy.SingleStateStrategy;
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy;
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType;
 
@@ -20,9 +23,9 @@ public interface SearchPropertiesView extends MvpView{
     void setSelectedShops(List<Shop> shopList);
     @StateStrategyType(AddToEndStrategy.class)
     void addSelectedShops(List<Shop> shopList);
-    @StateStrategyType(AddToEndStrategy.class)
+    @StateStrategyType(AddToEndSingleStrategy.class)
     void setCitiesList(List<String> citiesList);
-    @StateStrategyType(AddToEndStrategy.class)
+    @StateStrategyType(AddToEndSingleStrategy.class)
     void setShopsNAmeLIst(List<String> shopNameList);
    // void setSpinnerData(List<String> citiesList, List<String> shopsNameList);
     void showLoadingState();

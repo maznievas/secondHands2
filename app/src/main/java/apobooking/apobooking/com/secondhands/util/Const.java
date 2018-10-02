@@ -38,7 +38,7 @@ public abstract class Const {
         public static final String LOAD_ONE_SHOP = "loadOneShop";
     }
 
-    class ShopsName{
+    public class ShopsName{
         public static final String ECONOM_CLASS = "Econom class";
     }
 
@@ -47,5 +47,10 @@ public abstract class Const {
         public static final int NORTH = 2;
         public static final int WEST = 3;
         public static final int SOUTH = 4;
+    }
+
+    public class SavedInstanceState{
+        public static final String SHOP_NAME = "shop_name";
+        public static final String CITY_NAME = "city_name";
     }
 }

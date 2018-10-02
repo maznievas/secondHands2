@@ -25,6 +25,7 @@
     <style name="Button">
         <item name="android:background">@color/controlsYellow</item>
         <item name="android:textSize">@dimen/button_text_size</item>
+        <item name="android:textColor">@color/black</item>
     </style>
 
     <!--Progress dialog-->

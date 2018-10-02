@@ -34,10 +34,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.viewpagerindicator.CirclePageIndicator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -45,17 +42,14 @@ import javax.inject.Inject;
 
 import apobooking.apobooking.com.secondhands.MainActivity;
 import apobooking.apobooking.com.secondhands.R;
-import apobooking.apobooking.com.secondhands.SecondHandApplication;
 import apobooking.apobooking.com.secondhands.entity.Shop;
 import apobooking.apobooking.com.secondhands.util.Const;
 import apobooking.apobooking.com.secondhands.util.DayDetectHelper;
-import apobooking.apobooking.com.secondhands.util.ImageFragment;
 import apobooking.apobooking.com.secondhands.util.LocationUtil;
-import apobooking.apobooking.com.secondhands.util.OnTouchOutsideViewListener;
-import apobooking.apobooking.com.secondhands.util.SlidingImageAdapter;
+import apobooking.apobooking.com.secondhands.util.listeners.OnTouchOutsideViewListener;
+import apobooking.apobooking.com.secondhands.util.adapters.SlidingImageAdapter;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import butterknife.Unbinder;
 
 import static android.support.design.widget.BottomSheetBehavior.STATE_COLLAPSED;

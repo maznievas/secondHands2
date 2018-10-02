@@ -1,4 +1,4 @@
-package apobooking.apobooking.com.secondhands.util;
+package apobooking.apobooking.com.secondhands.util.adapters;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
@@ -11,6 +11,8 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import apobooking.apobooking.com.secondhands.util.ImageFragment;
 
 /**
  * Created by procreationsmac on 24/07/2018.

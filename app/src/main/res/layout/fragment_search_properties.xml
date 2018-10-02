@@ -8,7 +8,7 @@
     android:id="@+id/parentLayout"
   >
 
-    <android.support.v4.widget.NestedScrollView
+    <apobooking.apobooking.com.secondhands.util.MyScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
@@ -95,7 +95,7 @@
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/alShopsRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_below="@+id/allShopsLayout"
                 android:visibility="gone"
                 tools:listitem="@layout/shop_item"
@@ -126,7 +126,7 @@
                 android:visibility="gone" />
 
         </RelativeLayout>
-    </android.support.v4.widget.NestedScrollView>
+    </apobooking.apobooking.com.secondhands.util.MyScrollView>
 
     <apobooking.apobooking.com.secondhands.ui.CustomRelativeLayout
         android:layout_height="match_parent"

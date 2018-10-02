@@ -1,6 +1,7 @@
-package apobooking.apobooking.com.secondhands.util;
+package apobooking.apobooking.com.secondhands.util.adapters;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -8,10 +9,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +28,8 @@ import java.util.List;
 import apobooking.apobooking.com.secondhands.R;
 import apobooking.apobooking.com.secondhands.entity.Shop;
 import apobooking.apobooking.com.secondhands.search_properties_screen.SearchPropertiesFragment;
+import apobooking.apobooking.com.secondhands.util.Const;
+import apobooking.apobooking.com.secondhands.util.DayDetectHelper;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -56,8 +67,8 @@ public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 break;
         }
         return viewHolder;
-       // View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.shop_item, parent, false);
-       // return new ViewHolder(view);
+        // View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.shop_item, parent, false);
+        // return new ViewHolder(view);
     }
 
     @NonNull
@@ -86,20 +97,56 @@ public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                     }
                 });
 
-                int placeholder = R.color.recytclerViewItemColor;
-                switch(shop.getName()){
+                int errorImage = R.color.recytclerViewItemColor;
+                switch (shop.getName()) {
                     case Const.ShopsName.ECONOM_CLASS:
-                        placeholder = R.drawable.econom_logo;
+                        errorImage = R.drawable.econom_logo;
                         break;
                 }
 
+                int finalErrorImage = errorImage;
                 Glide.with(context)
                         .using(new FirebaseImageLoader())
                         .load(shop.getImageReference())
-                        .error(placeholder)
-                        .into(holder.shopImage);
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .into(new SimpleTarget<GlideDrawable>() {
+                            @Override
+                            public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                                holder.progressBar.setVisibility(View.INVISIBLE);
+                                holder.shopImage.setImageDrawable(resource);
+                            }
 
-                if(position == shopList.size() - 1)
+                            @Override
+                            public void onLoadFailed(Exception e, Drawable errorDrawable) {
+                                //super.onLoadFailed(e, errorDrawable);
+                                holder.progressBar.setVisibility(View.INVISIBLE);
+                                holder.shopImage.setImageResource(finalErrorImage);
+                            }
+                        });
+//                shop.getImageReference().getDownloadUrl()
+//                        .addOnSuccessListener(uri -> {
+//                            // holder.progressBar.setVisibility(View.INVISIBLE);
+//                            Picasso.get()
+//                                    .load(uri.toString())
+//                                    .into(holder.shopImage, new Callback() {
+//                                        @Override
+//                                        public void onSuccess() {
+//                                            holder.progressBar.setVisibility(View.INVISIBLE);
+//                                        }
+//
+//                                        @Override
+//                                        public void onError(Exception e) {
+//                                            holder.progressBar.setVisibility(View.INVISIBLE);
+//                                        }
+//                                    });
+//                        })
+//                        .addOnFailureListener(e -> {
+//                            holder.progressBar.setVisibility(View.INVISIBLE);
+//                            Picasso.get().load(finalErrorImage).into(holder.shopImage);
+//                        });
+
+
+                if (position == shopList.size() - 1)
                     SearchPropertiesFragment.allowToSearch = true;
                 break;
             case LOADING:
@@ -114,27 +161,27 @@ public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     public void addLoadingFooter() {
-       // if(!isLoadingAdded) {
-            shopList.add(new Shop());
-            isLoadingAdded = true;
-            Log.d("mLog", "Added. Sise: " + shopList.size());
-            notifyDataSetChanged();
+        // if(!isLoadingAdded) {
+        shopList.add(new Shop());
+        isLoadingAdded = true;
+        Log.d("mLog", "Added. Sise: " + shopList.size());
+        notifyDataSetChanged();
         //}
     }
 
     public void removeLoadingFooter() {
-       // if(isLoadingAdded) {
-            isLoadingAdded = false;
+        // if(isLoadingAdded) {
+        isLoadingAdded = false;
 
-            int position = shopList.size() - 1;
-            Shop item = shopList.get(position);
+        int position = shopList.size() - 1;
+        Shop item = shopList.get(position);
 
-            if (item != null) {
-                shopList.remove(position);
-                Log.d("mLog", "Removed. Sise: " + shopList.size());
-                notifyItemRemoved(position);
-            }
-       // }
+        if (item != null) {
+            shopList.remove(position);
+            Log.d("mLog", "Removed. Sise: " + shopList.size());
+            notifyItemRemoved(position);
+        }
+        // }
     }
 
 //    @Override
@@ -167,7 +214,7 @@ public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         this.shopList.addAll(shopList);
         notifyDataSetChanged();
         int amountDifference = this.shopList.size() - shopList.size();
-        if(amountDifference > 0 && previousShopListSize != this.shopList.size())
+        if (amountDifference > 0 && previousShopListSize != this.shopList.size())
             shopItemListener.scrollTo(amountDifference - 1);
     }
 
@@ -175,8 +222,7 @@ public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return isLoadingAdded;
     }
 
-    public void setShopItemListener(ShopItemListener shopItemListener)
-    {
+    public void setShopItemListener(ShopItemListener shopItemListener) {
         this.shopItemListener = shopItemListener;
     }
 
@@ -196,6 +242,8 @@ public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         @BindView(R.id.shopItemLayout)
         ViewGroup shopItemLayout;
+        @BindView(R.id.progressBar)
+        ProgressBar progressBar;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -211,8 +259,9 @@ public class ShopsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
     }
 
-    public interface ShopItemListener{
+    public interface ShopItemListener {
         void shopSelected(String shopId);
+
         void scrollToBottom();
 
         void scrollTo(int position);
