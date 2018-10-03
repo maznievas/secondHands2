@@ -44,11 +44,11 @@
                     android:orientation="vertical"
                     android:padding="@dimen/small_padding">
 
-                    <TextView
-                        style="@style/TextView"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/select_city" />
+                    <!--<TextView-->
+                        <!--style="@style/TextView"-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:text="@string/select_city" />-->
 
                     <Spinner
                         android:id="@+id/citySpinner"

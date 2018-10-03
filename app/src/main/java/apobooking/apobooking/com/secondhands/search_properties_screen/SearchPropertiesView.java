@@ -19,20 +19,32 @@ import apobooking.apobooking.com.secondhands.entity.ShopName;
  */
 
 @StateStrategyType(SkipStrategy.class)
-public interface SearchPropertiesView extends MvpView{
+public interface SearchPropertiesView extends MvpView {
     void setSelectedShops(List<Shop> shopList);
+
     @StateStrategyType(AddToEndStrategy.class)
     void addSelectedShops(List<Shop> shopList);
+
     @StateStrategyType(AddToEndSingleStrategy.class)
     void setCitiesList(List<String> citiesList);
+
     @StateStrategyType(AddToEndSingleStrategy.class)
     void setShopsNAmeLIst(List<String> shopNameList);
-   // void setSpinnerData(List<String> citiesList, List<String> shopsNameList);
+
+    @StateStrategyType(SkipStrategy.class)
+    void showMessage(int resId);
+
+    // void setSpinnerData(List<String> citiesList, List<String> shopsNameList);
     void showLoadingState();
+
     void hideLoadingstate();
+
     void showProgressBar();
+
     void hideProgressBar();
+
     void lockUI();
+
     void unlockUI();
 
     void scrollToFindButton();
