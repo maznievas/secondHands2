@@ -26,6 +26,11 @@ public abstract class Const {
         }
     }
 
+    public class BackStack{
+        public static final String MAIN_FRAGMENT = "main_fragment";
+        public static final String MAP_FRAGMENT = "map_fragment";
+    }
+
     public class RecyclerView{
         public static final int TOTAL_ITEM_EACH_LOAD = 10;
     }

@@ -7,6 +7,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import javax.inject.Singleton;
 
 import apobooking.apobooking.com.secondhands.database.AppDatabase;
+import apobooking.apobooking.com.secondhands.mainFragment.MainPresenter;
 import apobooking.apobooking.com.secondhands.map_screen.MapFragment;
 import apobooking.apobooking.com.secondhands.map_screen.MapPresenter;
 import apobooking.apobooking.com.secondhands.repositories.shop.ShopRepository;
@@ -31,4 +32,5 @@ public interface AppComponent {
     void inject(SearchPropertiesPresenter searchPropertiesPresenter);
     void inject(MapPresenter mapPresenter);
     void inject(ImageFragment imageFragment);
+    void inject(MainPresenter mainPresenter);
 }

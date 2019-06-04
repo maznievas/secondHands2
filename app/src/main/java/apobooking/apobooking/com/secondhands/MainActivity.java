@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MotionEvent;
 import android.view.View;
 
+import apobooking.apobooking.com.secondhands.mainFragment.MainFragment;
 import apobooking.apobooking.com.secondhands.map_screen.MapFragment;
 import apobooking.apobooking.com.secondhands.search_properties_screen.SearchPropertiesFragment;
 import apobooking.apobooking.com.secondhands.util.Const;
@@ -30,16 +31,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment searchPropertiesFragment = fragmentManager.findFragmentById(R.id.fragmentHolderLayout);
+        Fragment mainFragment = fragmentManager.findFragmentById(R.id.fragmentHolderLayout);
+        //Fragment mainFragment = fragmentManager.findFragmentById(R.id.fragmentHolderLayout);
 
-        if (searchPropertiesFragment == null) {
-            searchPropertiesFragment = SearchPropertiesFragment.newInstance();
+        if (mainFragment == null) {
+            mainFragment = new MainFragment();
         }
 
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction
-                .add(R.id.fragmentHolderLayout, searchPropertiesFragment)
-                .addToBackStack("SearchProperties")
+                .add(R.id.fragmentHolderLayout, mainFragment)
+                .addToBackStack(Const.BackStack.MAIN_FRAGMENT)
                 .commit();
 
 

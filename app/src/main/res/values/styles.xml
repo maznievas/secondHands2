@@ -16,15 +16,19 @@
         <item name="android:windowFullscreen">true</item>
     </style>
 
-    <!--TExtView-->
+    <!--TextView-->
     <style name="TextView">
         <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">@dimen/medium_text_size</item>
+        <item name="android:fontFamily">@font/fontfabric_muller_regular</item>
     </style>
 
     <!--Button-->
     <style name="Button">
         <item name="android:background">@color/controlsYellow</item>
         <item name="android:textSize">@dimen/button_text_size</item>
+        <item name="android:fontFamily">@font/gotham_pro_medium</item>
+        <item name="android:textColor">@color/black</item>
     </style>
 
     <!--Progress dialog-->
