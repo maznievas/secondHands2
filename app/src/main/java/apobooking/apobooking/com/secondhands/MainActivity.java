@@ -32,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment mainFragment = fragmentManager.findFragmentById(R.id.fragmentHolderLayout);
-        //Fragment mainFragment = fragmentManager.findFragmentById(R.id.fragmentHolderLayout);
 
         if (mainFragment == null) {
             mainFragment = new MainFragment();
