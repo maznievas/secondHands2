@@ -83,7 +83,7 @@
                     android:textAllCaps="false" />
             </LinearLayout>
 
-            <apobooking.apobooking.com.secondhands.ui.ShowSelectedShopsButton
+            <andrey.project.com.secondhands.ui.ShowSelectedShopsButton
                 android:id="@+id/allShopsLayout"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/button_height"
@@ -127,7 +127,7 @@
         </RelativeLayout>
     </android.support.v4.widget.NestedScrollView>
 
-    <apobooking.apobooking.com.secondhands.ui.CustomRelativeLayout
+    <andrey.project.com.secondhands.ui.CustomRelativeLayout
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:id="@+id/notTouchableLayout"
