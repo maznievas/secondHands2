@@ -1,4 +1,4 @@
-package andrey.project.com.secondhands.mainFragment;
+package andrey.project.com.secondhands.fragments.mainFragment;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Spinner;
 
 import com.arellomobile.mvp.MvpAppCompatFragment;
+import com.arellomobile.mvp.presenter.InjectPresenter;
 
 import java.util.Arrays;
 
@@ -19,10 +20,13 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 
-public class MainFragment extends MvpAppCompatFragment {
+public class MainFragment extends MvpAppCompatFragment implements MainFragmentView{
 
     private Unbinder unbinder;
     private CustomSpinnerAdapter updateDaySpinnerAdapter;
+
+    @InjectPresenter
+    MainPresenter mainPresenter;
 
     @BindView(R.id.citySpinner)
     Spinner sCity;

@@ -1,4 +1,4 @@
-package andrey.project.com.secondhands.map_screen;
+package andrey.project.com.secondhands.fragments.map_screen;
 
 import android.app.ProgressDialog;
 import android.location.Geocoder;

@@ -10,8 +10,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.MotionEvent;
 import android.view.View;
 
-import andrey.project.com.secondhands.mainFragment.MainFragment;
-import andrey.project.com.secondhands.map_screen.MapFragment;
+import andrey.project.com.secondhands.fragments.mainFragment.MainFragment;
+import andrey.project.com.secondhands.fragments.map_screen.MapFragment;
 import andrey.project.com.secondhands.search_properties_screen.SearchPropertiesFragment;
 import andrey.project.com.secondhands.util.Const;
 import andrey.project.com.secondhands.util.OnTouchOutsideViewListener;

@@ -1,4 +1,4 @@
-package andrey.project.com.secondhands.mainFragment;
+package andrey.project.com.secondhands.fragments.mainFragment;
 
 import com.arellomobile.mvp.MvpView;
 

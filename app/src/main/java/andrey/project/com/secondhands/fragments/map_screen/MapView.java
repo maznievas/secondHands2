@@ -1,4 +1,4 @@
-package andrey.project.com.secondhands.map_screen;
+package andrey.project.com.secondhands.fragments.map_screen;
 
 import com.arellomobile.mvp.MvpView;
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy;
